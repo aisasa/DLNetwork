@@ -22,6 +22,10 @@ public class DLRun {
         int miniBatch = 1;          // Subset of the training set. Here, the lower the better
         DLInit.InitType initType = DLInit.InitType.LOAD_PRE_SAVED;
         
+        // Loading MNIST data in its arrays
+        MNISTStore.loadMNISTArrays();
+        System.out.println("MNIST data set loaded");
+        
         // Creating neural network
         // DLNetwork(int[] shape, double lr, CostFn cFn, Reglz reg, double lmbd, InitType init/load)
         DLNetwork net = new DLNetwork(initShape, lRate, costF, reg, lambda, adapLR, initType); 
@@ -43,12 +47,12 @@ public class DLRun {
         System.out.println("· Mini batch: " + miniBatch);
         System.out.println("· Initialice weights/biases: " + net.initWBType);
         
-        // Loading MNIST data in its arrays
-        //MNISTloader.MNISTload();
-        MNISTStore.loadMNISTArrays();
-        System.out.println("MNIST data set loaded");
-        // Defining array x (which will contain input of each training example)
-        net.x = new double[MNISTStore.getInputSize()][1];
+        
+        
+        
+        
+        // Defining array x (which will contain each training example input)
+        //net.x = new double[MNISTStore.getInputSize()][1];
         
         // For the entire training set, and for several times (epochs)...
         for(int i =0; i<epochs; i++){

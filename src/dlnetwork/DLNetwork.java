@@ -54,6 +54,7 @@ public class DLNetwork {
         b = DLInit.initB(initWBType, netShape);
         z = new ArrayList(nLayers - 1);     // Inputs' arrays in each layer (except l1) 
         y = new ArrayList(nLayers);         // Activations: y = sigmoid(z)
+        x = new double[MNISTStore.getInputSize()][1];
     }
     
     private void feedForward(double[][] in){ // 'in' initialized with x
