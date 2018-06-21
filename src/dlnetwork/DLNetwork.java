@@ -9,11 +9,12 @@ public class DLNetwork {
     static final int MIN_SCORE_REF = 9840;  // Min. success rate to save weights and biases
     static final double MIN_LRN_R = 0.0001; // Min. learn rate
     static final double ERR_THR = 0.035;    // Error threshold to activate adapt. learning rate
+    // Execution layout
+    protected int epochs;                   // How many times we treat the entire training data set
     // Parameters
     protected int[] netShape;               // Neural network structure
     protected int nLayers;                  // # of layers
     protected double learnRate;             // Learning rate
-    protected int epochs;                   // How many times we treat the entire training data set
     protected int miniBatch;                // Subset of the training set. Here, the lower the better
     public static enum CostFn{QUADRATIC, CROSS_ENTROPY};   // Cost functions
     protected CostFn costFunction;
@@ -28,7 +29,7 @@ public class DLNetwork {
     public boolean saveBest = true;         // Save the best score?
     // Variables
     protected double[][] x;                 // Input array
-    protected double[] real;                // Real results to compare
+    protected double[] realOut;             // Real result belonging to an entry
     protected ArrayList <double[][]> w;     // List of weights' matrices     
     protected ArrayList <double[]> b;       // List of biases' arrays
     protected ArrayList <double[][]> z;     // List of zs' (linear results) arrays
@@ -37,7 +38,7 @@ public class DLNetwork {
     protected ArrayList <double[][]> gradW; // Gradient weights
     protected ArrayList <double[][]> gradB; // Gradient biases
    
-    DLNetwork(int[] shape, double lr, CostFn cFn, Reglz reg, double lmbd, AdaptLRate adLR, DLInit.InitType init) 
+    DLNetwork(int[] shape, double lr, CostFn cFn, Reglz reg, double lmbd, AdaptLRate adLR, int mBatch, DLInit.InitType init) 
             throws IOException, ClassNotFoundException{
         netShape = shape;                       
         nLayers = netShape.length;
@@ -47,8 +48,9 @@ public class DLNetwork {
         lambda = lmbd;
         // Adaptative learning rate 
         adaptLearnRate = adLR;              
-        if(adaptLearnRate == AdaptLRate.LIN)    // If lineal: newLearnRate = slope*error + errorMin
+        if(adaptLearnRate == AdaptLRate.LIN) // If lineal: newLearnRate = slope*error + errorMin
             linSlope = (learnRate-MIN_LRN_R)/ERR_THR;   // First compute slope
+        miniBatch = mBatch;
         // Initatilizing weights, biases and others
         bestSuccessRate = MIN_SCORE_REF;
         initWBType = init;
@@ -56,7 +58,117 @@ public class DLNetwork {
         b = DLInit.initB(initWBType, netShape);
         z = new ArrayList(nLayers - 1);     // Inputs' arrays in each layer (except l1) 
         y = new ArrayList(nLayers);         // Activations: y = sigmoid(z)
-        x = new double[MNISTStore.getInputSize()][1];   // Array x will contain each training example input
+        x = new double[MNISTStore.getInputSize()][1];   // Array x contains each training example input
+    }
+    
+    public void start(int epch) throws IOException{
+        epochs = epch;
+        // For the entire training set, and for several times (epochs)...
+        System.out.println("Starting computation (" + epochs + " epochs): " + new java.util.Date());
+        for(int i =0; i<epochs; i++){
+            // ...go SGD passing an appropriate size of minibatch...
+            doSGD(miniBatch);
+            // ...shuffling then the set,...
+            MNISTStore.shuffleMNIST();
+            // ...testing results after each epoch...
+            System.out.println("Epoch " + i + ": " + doTest()*100/10000 + "%");  
+            // ...and go for another one.
+        }
+        System.out.println("End computation: " + new java.util.Date());
+    }
+    
+    protected void doSGD(int mb) throws IOException{  // Mini-batch as parameter
+        // Stochastic Gradient Descent process:
+        ArrayList<double[][]> gradWTemp = new ArrayList(nLayers-1);
+        ArrayList<double[][]> gradBTemp = new ArrayList(nLayers-1);
+        // For the entire training data set, taken by mini-batch subsets...
+        for(int i=0; i<MNISTStore.getTrainingDataSize(); i=i+mb){ 
+            // ...and for each example in each mini-batch
+            for(int j=0; j<mb; j++){
+                // ...load its input set in x array...
+                for(int k=0; k<MNISTStore.getInputSize(); k++)
+                    x[k][0] = MNISTStore.getTrainingDataIn()[i+j][k]; //+ (Math.random()/noiseDivisor); //noise;  // <======= Added noise!!!
+                // ...and include it as first 'y' as needed later in computeGradient()
+                y.add(x);    
+                // Then load the realOut result linked to the example
+                realOut = DLMath.getOutputVector((int)MNISTStore.getTrainingDataOut()[i+j]);
+                // Compute the SGD process as learning algorithm...
+                feedForward(x);             // Feed forwarding
+                computeError();             // Output error
+                backProp();                 // Backpropagation
+                computeGradient();          // Gradient
+                // ...taking into account the subset of examples in mini-batch...
+                if(j==0){                   // Initializing gradient with previous values
+                    gradWTemp = new ArrayList(gradW);   
+                    gradBTemp = new ArrayList(gradB);  
+                }
+                else{                       // Adding each new value in mbatch process
+                    gradWTemp = DLMath.addMatrInLists(gradWTemp, gradW);  
+                    gradBTemp = DLMath.addMatrInLists(gradBTemp, gradW);  
+                }
+                // ...to compute accumulated gradient matrices (averaged in gradDescent())
+                gradW = gradWTemp;   
+                gradB = gradBTemp;
+            }
+            // Finally, after each mini-batch update weights/biases with gradients...
+            gradDescent(mb);                   
+            // ...and restart zs and ys to be ready for a new epoch.
+            z = new ArrayList(nLayers - 1);     
+            y = new ArrayList(nLayers);        
+        }
+        
+        /*// Stochastic Gradient Descent simplified first code for fixed mini-batch = 1  
+        for(int i=0; i<MNISTloader.getTrainingDataSize(); i++){     
+            for(int k=0; k<MNISTloader.getInputSize(); k++)
+                x[k][0] = MNISTloader.getTrainingDataIn()[i][k];
+            y.add(x);                       // Add input as first y
+            realOut = DLMath.getOutputVector((int)MNISTloader.getTrainingDataOut()[i]);
+            feedForward(x);                 // Feed forwarding
+            computeError();                 // Output error
+            backProp();                     // Backpropagation
+            computeGradient();              // Gradient
+            gradDescent();                  // Gradient descent
+            z = new ArrayList(nLayers - 1); // Restart zs
+            y = new ArrayList(nLayers);     // Restart ys
+        }*/
+    }
+    
+    protected double doTest() throws IOException{
+        // Time to confirm network goodness:
+        int success = 0;                    // Success counter
+        // Loading each example from test data set,...
+        for(int i=0; i<MNISTStore.getTestDataSize(); i++){     
+            for(int j=0; j<MNISTStore.getInputSize(); j++)
+                // ...both input...
+                x[j][0] = MNISTStore.getTestDataIn()[i][j];    // get[Test|Validation]DataIn
+            y.add(x);                       // Add input as first y
+            // ...and tied realOut result
+            realOut = DLMath.getOutputVector((int)MNISTStore.getTestDataOut()[i]);    // get[Test|Validation]DataOut
+            // Do feed forward
+            feedForward(x);               
+            // Take result of network, y, treat it,...
+            double[] y_t = DLMath.vTranspose(y.get(y.size()-1));    
+            // ...and convert to a comparable format with realOut result
+            int maxIndex = 0;
+            for(int j=0; j<y_t.length; j++)
+                maxIndex = y_t[j] > y_t[maxIndex] ? j : maxIndex;
+            y_t = DLMath.getOutputVector(maxIndex);
+            // Finally compare both results and accumulate successes
+            if(Arrays.equals(y_t, realOut))
+                success++;
+        }
+        // Once test done, update learning rate according to error obtained...
+        if(adaptLearnRate != AdaptLRate.NO){
+            double percent = success*100/MNISTStore.getTestDataSize();
+            updateLearnRate((100.0 - percent)/100.0);   // Error = (100 - percent of success)/100
+        }
+        // ...and save if best model
+        if(saveBest && (success > bestSuccessRate)){
+            bestSuccessRate = success;
+            if(saveModel(bestSuccessRate))
+                System.out.println("Saved w and b lists as best scored: "); 
+        }
+        return success;
     }
     
     private void feedForward(double[][] in){ // 'in' initialized with x
@@ -78,11 +190,11 @@ public class DLNetwork {
     
     private void computeError(){
         // Computing error in last layer L (* operator is Hadamard product):  
-        // delta_L = (dC/dy_L)*sigmoid_deriv(z_L) = (y_L-real)*sigmoid_deriv(z_L)
+        // delta_L = (dC/dy_L)*sigmoid_deriv(z_L) = (y_L-realOut)*sigmoid_deriv(z_L)
         deltas = new ArrayList(nLayers-1);
         double[][] delta_L = new double[netShape[nLayers-1]][1];
-        // (dC/dy_L) = (y_L-real)
-        double[] cost_d = DLMath.costQuadDeriv(DLMath.vTranspose(y.get(y.size()-1)), real);
+        // (dC/dy_L) = (y_L-realOut)
+        double[] cost_d = DLMath.costQuadDeriv(DLMath.vTranspose(y.get(y.size()-1)), realOut);
         // sigmoid_deriv(z_L)
         double[][] sigm_d = DLMath.sigmoidDeriv(z.get(z.size()-1));
         // Hadamard product with cost function election
@@ -142,124 +254,11 @@ public class DLNetwork {
                 b.get(i)[j] = b.get(i)[j] - (learnRate * gradB.get(i)[j][0]/mb);
     }
     
-    public void doSGD(int mb) throws IOException{  // Mini-batch as parameter
-        // Stochastic Gradient Descent process:
-        ArrayList<double[][]> gradWTemp = new ArrayList(nLayers-1);
-        ArrayList<double[][]> gradBTemp = new ArrayList(nLayers-1);
-        // For the entire training data set, taken by mini-batch subsets...
-        for(int i=0; i<MNISTStore.getTrainingDataSize(); i=i+mb){ 
-            // ...and for each example in each mini-batch
-            for(int j=0; j<mb; j++){
-                // ...load its input set in x array...
-                for(int k=0; k<MNISTStore.getInputSize(); k++)
-                    x[k][0] = MNISTStore.getTrainingDataIn()[i+j][k]; //+ (Math.random()/noiseDivisor); //noise;  // <======= Added noise!!!
-                // ...and include it as first 'y' as needed later in computeGradient()
-                y.add(x);    
-                // Then load the real result linked to the example
-                real = DLMath.getOutputVector((int)MNISTStore.getTrainingDataOut()[i+j]);
-                // Compute the SGD process as learning algorithm...
-                feedForward(x);             // Feed forwarding
-                computeError();             // Output error
-                backProp();                 // Backpropagation
-                computeGradient();          // Gradient
-                // ...taking into account the subset of examples in mini-batch...
-                if(j==0){                   // Initializing gradient with previous values
-                    gradWTemp = new ArrayList(gradW);   
-                    gradBTemp = new ArrayList(gradB);  
-                }
-                else{                       // Adding each new value in mbatch process
-                    gradWTemp = DLMath.addMatrInLists(gradWTemp, gradW);  
-                    gradBTemp = DLMath.addMatrInLists(gradBTemp, gradW);  
-                }
-                // ...to compute accumulated gradient matrices (averaged in gradDescent())
-                gradW = gradWTemp;   
-                gradB = gradBTemp;
-            }
-            // Finally, after each mini-batch update weights/biases with gradients...
-            gradDescent(mb);                   
-            // ...and restart zs and ys to be ready for a new epoch.
-            z = new ArrayList(nLayers - 1);     
-            y = new ArrayList(nLayers);        
-        }
-        
-        /*// Stochastic Gradient Descent simplified first code for fixed mini-batch = 1  
-        for(int i=0; i<MNISTloader.getTrainingDataSize(); i++){     
-            for(int k=0; k<MNISTloader.getInputSize(); k++)
-                x[k][0] = MNISTloader.getTrainingDataIn()[i][k];
-            y.add(x);                       // Add input as first y
-            real = DLMath.getOutputVector((int)MNISTloader.getTrainingDataOut()[i]);
-            feedForward(x);                 // Feed forwarding
-            computeError();                 // Output error
-            backProp();                     // Backpropagation
-            computeGradient();              // Gradient
-            gradDescent();                  // Gradient descent
-            z = new ArrayList(nLayers - 1); // Restart zs
-            y = new ArrayList(nLayers);     // Restart ys
-        }*/
-    }
-    
-    public double doTest() throws IOException{
-        // Time to confirm network goodness:
-        int success = 0;                   // Success marker
-        // Loading each example from test data set,...
-        for(int i=0; i<MNISTStore.getTestDataSize(); i++){     
-            for(int j=0; j<MNISTStore.getInputSize(); j++)
-                // ...both input...
-                x[j][0] = MNISTStore.getTestDataIn()[i][j];    // get[Test|Validation]DataIn
-            y.add(x);                           // Add input as first y
-            // ...and tied real result
-            real = DLMath.getOutputVector((int)MNISTStore.getTestDataOut()[i]);    // get[Test|Validation]DataOut
-            // Do feed forward
-            feedForward(x);               
-            // Take result of network, y, treat it,...
-            double[] y_t = DLMath.vTranspose(y.get(y.size()-1));    
-            // ...and convert to a comparable format with real result
-            int maxIndex = 0;
-            for(int j=0; j<y_t.length; j++)
-                maxIndex = y_t[j] > y_t[maxIndex] ? j : maxIndex;
-            y_t = DLMath.getOutputVector(maxIndex);
-            // Finally compare both results and accumulate successes
-            if(Arrays.equals(y_t, real))
-                success++;
-        }
-        // Once test done, update learning rate according to error obtained...
-        if(adaptLearnRate != AdaptLRate.NO){
-            double percent = success*100/MNISTStore.getTestDataSize();
-            updateLearnRate((100.0 - percent)/100.0);   // Error = (100 - percent of success)/100
-        }
-        // ...and save if best model
-        if(saveBest && (success > bestSuccessRate)){
-            bestSuccessRate = success;
-            if(saveModel(bestSuccessRate))
-                System.out.println("Saved w and b lists as best scored: "); 
-        }
-        return success;
-    }
-    
-    public void start(int epch, int mB) throws IOException{
-        epochs = epch;
-        miniBatch = mB;
-        // For the entire training set, and for several times (epochs)...
-        for(int i =0; i<epochs; i++){
-            // ...go SGD passing an appropriate size of minibatch...
-            doSGD(miniBatch);
-            // ...shuffling then the set,...
-            MNISTStore.shuffleMNIST();
-            // ...testing results after each epoch...
-            System.out.println("Epoch " + i + ": " + doTest()*100/10000 + "%");  
-            // ...and go for another one.
-        }
-    }
-    
     private void updateLearnRate(double error){
         if((adaptLearnRate == AdaptLRate.LIN) && (error < ERR_THR))
             // newLearnRate = slope*error + minLearnRate, where...
             // ...slope = (initLearnRate-minLearnRate)/errorActivationThreshold
             learnRate = linSlope * error + MIN_LRN_R;
-        /*else if(adaptLearnRate == AdaptLRate.SQRT)  
-
-        else if(adaptLearnRate == AdaptLRate.QUAD)*/
-
     }
     
     public boolean saveModel(int success) throws IOException{
@@ -273,6 +272,25 @@ public class DLNetwork {
             return false;
         }
         return true;
+    }
+    
+    public void paramRef(){
+        // Network parameters reference
+        System.out.println("Network reference: ");
+        System.out.println("· Shape: " + Arrays.toString(netShape));
+        System.out.println("· Cost function: " + costFunction);
+        System.out.println("· Learning rate: " + learnRate);
+        System.out.println("· Adaptative learning rate: " + adaptLearnRate);
+        if(adaptLearnRate == DLNetwork.AdaptLRate.LIN){
+            System.out.println("    Error threshold: " + DLNetwork.ERR_THR);
+            System.out.println("    Minimum learn rate: " + DLNetwork.MIN_LRN_R);
+        }
+        System.out.println("· Regularization: " + regularization);
+        if(regularization == DLNetwork.Reglz.L2)
+            System.out.println("    L2 lambda: " + lambda);
+        //System.out.println("· Epochs: " + epochs);
+        System.out.println("· Mini batch: " + miniBatch);
+        System.out.println("· Initialice weights/biases: " + initWBType);
     }
     
 }
