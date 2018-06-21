@@ -16,11 +16,12 @@ public class DLRun {
         DLNetwork.AdaptLRate adapLR = DLNetwork.AdaptLRate.LIN; //LIN;
         // Regularization type and possible parameters. No reg -> Reglz.NO
         DLNetwork.Reglz reg = DLNetwork.Reglz.L2;   
-        double lambda = 1.;        // L2 regularization parameter
+        double lambda = 1.0;        // L2 regularization parameter
+        // How to initialize weights and biases sets
+        DLInit.InitType initType = DLInit.InitType.LOAD_PRE_SAVED;
         // Working parameters
         int epochs = 100;           // How many times we treat the entire training data set
         int miniBatch = 1;          // Subset of the training set. Here, the lower the better
-        DLInit.InitType initType = DLInit.InitType.LOAD_PRE_SAVED;
         
         // Loading MNIST data in its arrays
         MNISTStore.loadMNISTArrays();
@@ -47,23 +48,10 @@ public class DLRun {
         System.out.println("· Mini batch: " + miniBatch);
         System.out.println("· Initialice weights/biases: " + net.initWBType);
         
-        
-        
-        
-        
-        // Defining array x (which will contain each training example input)
-        //net.x = new double[MNISTStore.getInputSize()][1];
-        
-        // For the entire training set, and for several times (epochs)...
-        for(int i =0; i<epochs; i++){
-            // ...go SGD passing an appropriate size of minibatch...
-            net.doSGD(miniBatch);
-            // ...shuffling then the set,...
-            MNISTStore.shuffleMNIST();
-            // ...testing results after each epoch...
-            System.out.println("Epoch " + i + ": " + net.doTest()*100/10000 + "%");  
-            // ...and go for another one.
-        }
+        // Start computing
+        System.out.println("Starting computation: " + new java.util.Date());
+        net.start(epochs, miniBatch);
+        System.out.println("End computation: " + new java.util.Date());
     }
 
 }

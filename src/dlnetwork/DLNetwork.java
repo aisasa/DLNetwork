@@ -13,6 +13,8 @@ public class DLNetwork {
     protected int[] netShape;               // Neural network structure
     protected int nLayers;                  // # of layers
     protected double learnRate;             // Learning rate
+    protected int epochs;                   // How many times we treat the entire training data set
+    protected int miniBatch;                // Subset of the training set. Here, the lower the better
     public static enum CostFn{QUADRATIC, CROSS_ENTROPY};   // Cost functions
     protected CostFn costFunction;
     public static enum Reglz{NO, L2};       // Regularization type, if any
@@ -35,7 +37,7 @@ public class DLNetwork {
     protected ArrayList <double[][]> gradW; // Gradient weights
     protected ArrayList <double[][]> gradB; // Gradient biases
    
-    DLNetwork(int[] shape, double lr,  CostFn cFn, Reglz reg, double lmbd, AdaptLRate adLR, DLInit.InitType init) 
+    DLNetwork(int[] shape, double lr, CostFn cFn, Reglz reg, double lmbd, AdaptLRate adLR, DLInit.InitType init) 
             throws IOException, ClassNotFoundException{
         netShape = shape;                       
         nLayers = netShape.length;
@@ -54,7 +56,7 @@ public class DLNetwork {
         b = DLInit.initB(initWBType, netShape);
         z = new ArrayList(nLayers - 1);     // Inputs' arrays in each layer (except l1) 
         y = new ArrayList(nLayers);         // Activations: y = sigmoid(z)
-        x = new double[MNISTStore.getInputSize()][1];
+        x = new double[MNISTStore.getInputSize()][1];   // Array x will contain each training example input
     }
     
     private void feedForward(double[][] in){ // 'in' initialized with x
@@ -232,6 +234,21 @@ public class DLNetwork {
                 System.out.println("Saved w and b lists as best scored: "); 
         }
         return success;
+    }
+    
+    public void start(int epch, int mB) throws IOException{
+        epochs = epch;
+        miniBatch = mB;
+        // For the entire training set, and for several times (epochs)...
+        for(int i =0; i<epochs; i++){
+            // ...go SGD passing an appropriate size of minibatch...
+            doSGD(miniBatch);
+            // ...shuffling then the set,...
+            MNISTStore.shuffleMNIST();
+            // ...testing results after each epoch...
+            System.out.println("Epoch " + i + ": " + doTest()*100/10000 + "%");  
+            // ...and go for another one.
+        }
     }
     
     private void updateLearnRate(double error){
