@@ -1,8 +1,8 @@
 package dlnetwork;
 
-import java.io.*;                           // Write and read files
+import java.io.*;                           // Write/read files
 import java.util.*;                         // ArrayList and Arrays
-import java.util.zip.*;                     // Zip and unzip files
+import java.util.zip.*;                     // Zip/unzip files
 
 public class DLNetwork {
     // Constants
@@ -11,6 +11,7 @@ public class DLNetwork {
     static final double ERR_THR = 0.035;    // Error threshold to activate adapt. learning rate
     // Execution layout
     protected int epochs;                   // How many times we treat the entire training data set
+    protected boolean shuffleSets;          // Shuffle or not training sets between epochs
     // Parameters
     protected int[] netShape;               // Neural network structure
     protected int nLayers;                  // # of layers
@@ -25,11 +26,11 @@ public class DLNetwork {
     protected AdaptLRate adaptLearnRate;
     protected double linSlope;              // Slope of line equation for LIN     
     public DLInit.InitType initWBType;      // Initialice or load weights/biases?
-    public int bestSuccessRate;             // Best score between successes
+    public int bestSuccessRate;             // Best score between successes in an epoch
     public boolean saveBest = true;         // Save the best score?
     // Variables
     protected double[][] x;                 // Input array
-    protected double[] realOut;             // Real result belonging to an entry
+    protected double[] realOut;             // Real result linked to an entry
     protected ArrayList <double[][]> w;     // List of weights' matrices     
     protected ArrayList <double[]> b;       // List of biases' arrays
     protected ArrayList <double[][]> z;     // List of zs' (linear results) arrays
@@ -61,15 +62,17 @@ public class DLNetwork {
         x = new double[MNISTStore.getInputSize()][1];   // Array x contains each training example input
     }
     
-    public void start(int epch) throws IOException{
+    public void start(int epch, boolean shuffle) throws IOException{
         epochs = epch;
-        // For the entire training set, and for several times (epochs)...
+        shuffleSets = shuffle;
+        // For the entire training set each time, and for several times (epochs)...
         System.out.println("Starting computation (" + epochs + " epochs): " + new java.util.Date());
         for(int i =0; i<epochs; i++){
             // ...go SGD passing an appropriate size of minibatch...
             doSGD(miniBatch);
-            // ...shuffling then the set,...
-            MNISTStore.shuffleMNIST();
+            // ...then shuffling the set if provided,...
+            //if(shuffleSets)
+              //  MNISTStore.shuffleMNIST();
             // ...testing results after each epoch...
             System.out.println("Epoch " + i + ": " + doTest()*100/10000 + "%");  
             // ...and go for another one.
@@ -288,7 +291,6 @@ public class DLNetwork {
         System.out.println("· Regularization: " + regularization);
         if(regularization == DLNetwork.Reglz.L2)
             System.out.println("    L2 lambda: " + lambda);
-        //System.out.println("· Epochs: " + epochs);
         System.out.println("· Mini batch: " + miniBatch);
         System.out.println("· Initialice weights/biases: " + initWBType);
     }

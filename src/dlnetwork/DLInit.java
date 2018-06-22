@@ -5,7 +5,7 @@ import java.io.*;
 import java.util.zip.*;
 
 public class DLInit {
-    // Clean initialization | Load a prev. saved random set | Load a prev. set of best scoring
+    // Clean initialization || Load a prev. saved random set || Load a prev. set of best scoring
     public static enum InitType{RANDOM, LOAD_PRE_SAVED, LOAD_BEST};
     
     public static ArrayList<double[][]> initW(InitType initT, int[] netShape) throws IOException, ClassNotFoundException{
