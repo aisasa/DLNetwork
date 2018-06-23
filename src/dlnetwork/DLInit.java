@@ -7,6 +7,7 @@ import java.util.zip.*;
 public class DLInit {
     // Clean initialization || Load a prev. saved random set || Load a prev. set of best scoring
     public static enum InitType{RANDOM, LOAD_PRE_SAVED, LOAD_BEST};
+    public static boolean saveRand;
     
     public static ArrayList<double[][]> initW(InitType initT, int[] netShape) throws IOException, ClassNotFoundException{
         ArrayList <double[][]> w = new ArrayList(netShape.length - 1);
@@ -39,14 +40,16 @@ public class DLInit {
             u = new double[netShape[i]][netShape[i-1]]; 
             for(int j=0; j<netShape[i]; j++)
                 for(int k=0; k<netShape[i-1]; k++)
-                    u[j][k] = (Math.random()-05.)/100;  // (Math.random()-0.5)/100;
+                    u[j][k] = (Math.random()-0.5)/100;  // (Math.random()-0.5)/100;
             w.add(u);
         }
         // Saving the initialization weights for future reference in tests
-        try(ObjectOutputStream out = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream("initial_W.dat")))){
-                out.writeObject(w);
-            }
-        System.out.println("Initial weights data saved");
+        if(saveRand){
+            try(ObjectOutputStream out = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream("initial_W.dat")))){
+                    out.writeObject(w);
+                }
+            System.out.println("Initial weights data saved");
+        }
         return w;
     }
     
@@ -62,10 +65,12 @@ public class DLInit {
             b.add(v);            
         } 
         // Saving the initialization biases for future reference in tests
-        try(ObjectOutputStream out = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream("initial_B.dat")))){
-                out.writeObject(b);
-            }
-        System.out.println("Initial biases data saved");
+        if(saveRand){
+            try(ObjectOutputStream out = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream("initial_B.dat")))){
+                    out.writeObject(b);
+                }
+            System.out.println("Initial biases data saved");
+        }
         return b;
     }
     

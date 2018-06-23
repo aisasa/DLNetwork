@@ -11,7 +11,7 @@ public class DLNetwork {
     static final double ERR_THR = 0.035;    // Error threshold to activate adapt. learning rate
     // Execution layout
     protected int epochs;                   // How many times we treat the entire training data set
-    protected boolean shuffleSets;          // Shuffle or not training sets between epochs
+    protected boolean shuffleSets;          // Shuffle or not training sets between epochs?
     // Parameters
     protected int[] netShape;               // Neural network structure
     protected int nLayers;                  // # of layers
@@ -71,8 +71,8 @@ public class DLNetwork {
             // ...go SGD passing an appropriate size of minibatch...
             doSGD(miniBatch);
             // ...then shuffling the set if provided,...
-            //if(shuffleSets)
-              //  MNISTStore.shuffleMNIST();
+            if(shuffleSets)
+                MNISTStore.shuffleMNIST();
             // ...testing results after each epoch...
             System.out.println("Epoch " + i + ": " + doTest()*100/10000 + "%");  
             // ...and go for another one.
