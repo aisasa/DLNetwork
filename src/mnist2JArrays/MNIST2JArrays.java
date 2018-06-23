@@ -18,7 +18,6 @@ public class MNIST2JArrays {
     private static double[][] testDataIn;
     private static double[] testDataOut;
     
-
     public static void mnist2JArrays() throws IOException, ClassNotFoundException {
         // Training data
         trainingDataIn = new double[TRAINING_DATA_SIZE][INPUT_SIZE];

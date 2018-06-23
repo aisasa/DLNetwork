@@ -5,10 +5,10 @@ import java.io.*;
 import java.util.zip.*;
 
 public class DLInit {
-    public static ArrayList<ArrayList> wbArrays;   // Weights and biases arrays in a container
+    protected static ArrayList<ArrayList> wbArrays;   // Weights and biases arrays in a container
     // Clean init || Clean init & save || Load a prev. saved random set || Load (now manually) a prev. set of best scoring
-    public static enum WBInitType{RANDOM, RAND_AND_SAVE, LOAD_PRE_SAVED, LOAD_BEST};
-    public static WBInitType wbInitType;
+    protected static enum WBInitType{RANDOM, RAND_AND_SAVE, LOAD_PRE_SAVED, LOAD_BEST};
+    protected static WBInitType wbInitType;
     
     public static ArrayList<ArrayList> initWB(WBInitType initT, int[] netShape) throws IOException, ClassNotFoundException{
         wbInitType = initT;
