@@ -25,7 +25,7 @@ public class DLNetwork {
     public static enum AdaptLRate{NO, SQRT, QUAD, LIN}; // Adaptative learning, if any
     protected AdaptLRate adaptLearnRate;
     protected double linSlope;              // Slope of line equation for LIN     
-    public DLInit.InitType initWBType;      // Initialice or load weights/biases?
+    //public DLInit.WBInitType initWBType;      // Initialice or load weights/biases?
     public int bestSuccessRate;             // Best score between successes in an epoch
     public boolean saveBest = true;         // Save the best score?
     // Variables
@@ -39,8 +39,9 @@ public class DLNetwork {
     protected ArrayList <double[][]> gradW; // Gradient weights
     protected ArrayList <double[][]> gradB; // Gradient biases
    
-    DLNetwork(int[] shape, double lr, CostFn cFn, Reglz reg, double lmbd, AdaptLRate adLR, int mBatch, DLInit.InitType init) 
+    DLNetwork(int[] shape, double lr, CostFn cFn, Reglz reg, double lmbd, AdaptLRate adLR, int mBatch, DLInit.WBInitType initT) 
             throws IOException, ClassNotFoundException{
+        // Network layout
         netShape = shape;                       
         nLayers = netShape.length;
         learnRate = lr;
@@ -51,15 +52,18 @@ public class DLNetwork {
         adaptLearnRate = adLR;              
         if(adaptLearnRate == AdaptLRate.LIN) // If lineal: newLearnRate = slope*error + errorMin
             linSlope = (learnRate-MIN_LRN_R)/ERR_THR;   // First compute slope
+        // Others
         miniBatch = mBatch;
-        // Initatilizing weights, biases and others
         bestSuccessRate = MIN_SCORE_REF;
-        initWBType = init;
-        w = DLInit.initW(initWBType, netShape);
-        b = DLInit.initB(initWBType, netShape);
+        // Initatilizing weights and biases 
+        //initWBType = initT;
+        ArrayList<ArrayList> wbContainer = DLInit.initWB(initT, netShape);
+        w = wbContainer.get(0); //(ArrayList<double[][]>)DLInit.wbArrays.get(0);
+        b = wbContainer.get(1); //(ArrayList<double[]>)DLInit.wbArrays.get(1);
+        // Initializing some variables
         z = new ArrayList(nLayers - 1);     // Inputs' arrays in each layer (except l1) 
         y = new ArrayList(nLayers);         // Activations: y = sigmoid(z)
-        x = new double[MNISTStore.getInputSize()][1];   // Array x contains each training example input
+        x = new double[MNISTStore.getInputSize()][1];   // Array x contains each training example input   
     }
     
     public void start(int epch, boolean shuffle) throws IOException{
@@ -292,7 +296,7 @@ public class DLNetwork {
         if(regularization == DLNetwork.Reglz.L2)
             System.out.println("    L2 lambda: " + lambda);
         System.out.println("· Mini batch: " + miniBatch);
-        System.out.println("· Initialice weights/biases: " + initWBType);
+        System.out.println("· Initialice weights/biases: " + DLInit.wbInitType);
     }
     
 }
