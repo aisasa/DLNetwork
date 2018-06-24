@@ -1,8 +1,8 @@
 package dlnetwork;
 
-import mnist2JArrays.*;
-import java.io.*;
-import java.util.zip.*;
+import mnist2JArrays.*;                     // MNIST txt data to Java arrays
+import java.io.*;                           // IOException, File, I/O streams
+import java.util.zip.*;                     // Zip/unzip files
 
 public class MNISTStore {
     private static double[][] trainingDataIn;   

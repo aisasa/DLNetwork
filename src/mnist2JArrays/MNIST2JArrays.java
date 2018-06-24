@@ -1,9 +1,15 @@
 package mnist2JArrays;
 
-import java.io.*;
-import java.util.Scanner;
-import java.util.zip.*;
+import java.io.*;                           // IOException, I/O streams, File
+import java.util.Scanner;                   // Reading txt files
+import java.util.zip.*;                     // Zip/unzip files
 
+/**
+ * Convert MNIST text data sets to Java arrays.
+ * 
+ * @version 0.9 
+ * @author  Agustin Isasa Cuartero
+ */
 public class MNIST2JArrays {
     // Constants
     private static final int TRAINING_DATA_SIZE = 50000;
@@ -18,7 +24,13 @@ public class MNIST2JArrays {
     private static double[][] testDataIn;
     private static double[] testDataOut;
     
-    public static void mnist2JArrays() throws IOException, ClassNotFoundException {
+    /**
+     * Method that scans the MNIST text data sets and convert them to Java arrays, 
+     * saving finally data in files. 
+     * 
+     * @throws IOException      If file does not exist.
+     */
+    public static void mnist2JArrays() throws IOException{ 
         // Training data
         trainingDataIn = new double[TRAINING_DATA_SIZE][INPUT_SIZE];
         try (Scanner scan = new Scanner(new File("trainingDataIn.txt"))) {

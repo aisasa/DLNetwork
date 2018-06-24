@@ -1,8 +1,8 @@
 package dlnetwork;
 
-import java.util.*;
-import java.io.*;
-import java.util.zip.*;
+import java.util.*;                         // ArrayList and Arrays
+import java.io.*;                           // IOException, I/O streams
+import java.util.zip.*;                     // Zip/unzip files
 
 public class DLInit {
     protected static ArrayList<ArrayList> wbArrays;   // Weights and biases arrays in a container

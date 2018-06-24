@@ -1,6 +1,6 @@
 package dlnetwork;
 
-import java.io.*;                   // IOException
+import java.io.*;                           // IOException
 
 public class DLRun {
     // Defining, building and starting the neural network

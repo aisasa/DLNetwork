@@ -9,9 +9,6 @@ public class DLNetwork {
     static final int MIN_SCORE_REF = 9840;  // Min. success rate to save weights and biases
     static final double MIN_LRN_R = 0.0001; // Min. learn rate
     static final double ERR_THR = 0.035;    // Error threshold to activate adapt. learning rate
-    // Execution layout
-    protected int epochs;                   // How many times we treat the entire training data set
-    protected boolean shuffleSets;          // Shuffle or not training sets between epochs?
     // Parameters
     protected int[] netShape;               // Neural network structure
     protected int nLayers;                  // # of layers
@@ -37,6 +34,9 @@ public class DLNetwork {
     protected ArrayList <double[][]> deltas;// Backpropagated errors
     protected ArrayList <double[][]> gradW; // Gradient weights
     protected ArrayList <double[][]> gradB; // Gradient biases
+    // Execution layout
+    protected int epochs;                   // How many times we treat the entire training data set
+    protected boolean shuffleSets;          // Shuffle or not training sets between epochs?
    
     DLNetwork(int[] shape, double lr, CostFn cFn, Reglz reg, double lmbd, AdaptLRate adLR, int mBatch, DLInit.WBInitType initT) 
             throws IOException, ClassNotFoundException{
@@ -262,8 +262,8 @@ public class DLNetwork {
     private void updateLearnRate(double error){
         if((adaptLearnRate == AdaptLRate.LIN) && (error < ERR_THR))
             // newLearnRate = slope*error + minLearnRate, where...
-            // ...slope = (initLearnRate-minLearnRate)/errorActivationThreshold
             learnRate = linSlope * error + MIN_LRN_R;
+            // ...slope = (initLearnRate-minLearnRate)/errorActivationThreshold
     }
     
     public boolean saveModel(int success) throws IOException{
