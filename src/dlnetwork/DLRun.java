@@ -17,7 +17,7 @@ public class DLRun {
         DLNetwork.Reglz reg = DLNetwork.Reglz.L2;   
         double lambda = 1.0;        // L2 regularization parameter
         // How to initialize weights and biases sets
-        DLInit.WBInitType wbInitType = DLInit.WBInitType.RAND_AND_SAVE; // RANDOM, RAND_AND_SAVE, LOAD_PRE_SAVED, LOAD_BEST
+        DLInit.WBInitType wbInitType = DLInit.WBInitType.RAND_AND_SAVE; // RANDOM, RAND_AND_SAVE, LOAD_PRE_SAVED, LOAD_BY_NAME
         // Mini batch: subset of the training set. Here, the lower the better
         int miniBatch = 1;      
         

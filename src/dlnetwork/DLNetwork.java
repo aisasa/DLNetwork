@@ -268,7 +268,8 @@ public class DLNetwork {
     
     public boolean saveModel(int success) throws IOException{
         try{
-            ObjectOutputStream out = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream("ws" + success + ".dat")));
+            ObjectOutputStream out = 
+                    new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream("ws" + success + ".dat")));
             out.writeObject(w);
             out = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream("bs" + success + ".dat")));
             out.writeObject(b);

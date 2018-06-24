@@ -25,8 +25,8 @@ public class MNIST2JArrays {
     private static double[] testDataOut;
     
     /**
-     * Method that scans the MNIST text data sets and convert them to Java arrays, 
-     * saving finally data in files. 
+     * Static method that scans the MNIST text data sets and convert them to 
+     * Java arrays, saving finally data in files. 
      * 
      * @throws IOException      If file does not exist.
      */
@@ -84,7 +84,7 @@ public class MNIST2JArrays {
 
         // Test data
         testDataIn = new double[TEST_DATA_SIZE][INPUT_SIZE];
-        try (Scanner scan = new Scanner(new File("testDataIn.txt"))) {  // testDataIn.txt
+        try (Scanner scan = new Scanner(new File("testDataIn.txt"))) {  
             for (int i = 0; i < TEST_DATA_SIZE; i++) 
                 for (int j = 0; j < INPUT_SIZE; j++) 
                     testDataIn[i][j] = Double.parseDouble(scan.findWithinHorizon("0\\.[0-9]*", INPUT_SIZE));
@@ -94,7 +94,7 @@ public class MNIST2JArrays {
             out.writeObject(testDataIn);
         }
         testDataOut = new double[TEST_DATA_SIZE];
-        try (FileReader input = new FileReader("testDataOut.txt")) {   // testDataOut.txt
+        try (FileReader input = new FileReader("testDataOut.txt")) {   
             int c;
             for (int i = 0; i < TEST_DATA_SIZE; i++) {
                 c = input.read();

@@ -6,9 +6,11 @@ import java.util.zip.*;                     // Zip/unzip files
 
 public class DLInit {
     protected static ArrayList<ArrayList> wbArrays;   // Weights and biases arrays in a container
-    // Clean init || Clean init & save || Load a prev. saved random set || Load (now manually) a prev. set of best scoring
-    protected static enum WBInitType{RANDOM, RAND_AND_SAVE, LOAD_PRE_SAVED, LOAD_BEST};
+    // Clean init | Clean init & save | Load a prev. saved random set | Load by console a prev. set of best score
+    protected static enum WBInitType{RANDOM, RAND_AND_SAVE, LOAD_PRE_SAVED, LOAD_BY_NAME};
     protected static WBInitType wbInitType;
+    protected static String wFileName = "";
+    protected static String bFileName = "";
     
     public static ArrayList<ArrayList> initWB(WBInitType initT, int[] netShape) throws IOException, ClassNotFoundException{
         wbInitType = initT;
@@ -20,12 +22,20 @@ public class DLInit {
             b = _initB(netShape);
         }
         else if(wbInitType == WBInitType.LOAD_PRE_SAVED){
-            w = _loadW();
-            b = _loadB();
+            w = _loadW(wFileName);
+            b = _loadB(bFileName);
+        }
+        else if(wbInitType == WBInitType.LOAD_BY_NAME){
+            System.out.println("Enter weights file name: ");
+            wFileName = new Scanner(System.in).nextLine();
+            System.out.println("Enter biases file name: ");
+            bFileName = new Scanner(System.in).nextLine();
+            w = _loadW(wFileName);
+            b = _loadB(bFileName);
         }
         wbArrays.add(w);
         wbArrays.add(b);
-        return wbArrays;
+        return wbArrays; 
     }
     
     private static ArrayList<double[][]> _initW(int[] netShape) throws IOException, ClassNotFoundException{ 
@@ -37,7 +47,7 @@ public class DLInit {
             u = new double[netShape[i]][netShape[i-1]]; 
             for(int j=0; j<netShape[i]; j++)
                 for(int k=0; k<netShape[i-1]; k++)
-                    u[j][k] = (Math.random()-0.5)/100;  // (Math.random()-0.5)/100;
+                    u[j][k] = (Math.random()-0.5)/100;  
             w.add(u);
         }
         // Saving the initialization weights for future reference in tests, if chosen
@@ -58,7 +68,7 @@ public class DLInit {
         for(int i=1; i<nLayers; i++){
             v = new double[netShape[i]];
             for(int j=0; j<netShape[i]; j++)
-                v[j] = (Math.random()-0.5)/50; //0.5
+                v[j] = (Math.random()-0.5)/50; 
             b.add(v);            
         } 
         // Saving the initialization biases for future reference in tests, if chosen
@@ -71,21 +81,24 @@ public class DLInit {
         return b;
     }
     
-    private static ArrayList<double[][]> _loadW() throws IOException, ClassNotFoundException{
-        String fileName = "initial_W.dat";     // [initial_W.dat | ws9858.dat]
+    private static ArrayList<double[][]> _loadW(String fName) throws IOException, ClassNotFoundException{
+        if(fName.equals(""))
+            wFileName = "initial_W.dat";     // [initial_W.dat | ws9XXX.dat]
         ArrayList <double[][]> w;   
-        try(ObjectInputStream in = new ObjectInputStream(new GZIPInputStream(new FileInputStream(fileName)))){ 
+        try(ObjectInputStream in = new ObjectInputStream(new GZIPInputStream(new FileInputStream(wFileName)))){ 
                 w = (ArrayList<double[][]>)in.readObject();
             }
         return w;
     }
     
-    private static ArrayList<double[]> _loadB() throws IOException, ClassNotFoundException{
-        String fileName = "initial_B.dat";     // [initial_B.dat | bs9858.dat]
+    private static ArrayList<double[]> _loadB(String fName) throws IOException, ClassNotFoundException{
+        if(fName.equals(""))
+            bFileName = "initial_B.dat";     // [initial_B.dat | bs9XXX.dat]
         ArrayList <double[]> b;
-        try(ObjectInputStream in = new ObjectInputStream(new GZIPInputStream(new FileInputStream(fileName)))){ 
+        try(ObjectInputStream in = new ObjectInputStream(new GZIPInputStream(new FileInputStream(bFileName)))){ 
                 b = (ArrayList<double[]>)in.readObject();
             }
         return b;
     }
+    
 }

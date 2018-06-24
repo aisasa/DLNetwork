@@ -36,7 +36,6 @@ public class DLMath {
     
     public static double[][] sigmoid(double[][] z){
         double[][] sigm = new double[z.length][z[0].length];
-        //double[] sigm = Arrays.copyOf(z, z.length);
         for(int i=0; i<z.length; i++)
             for(int j=0; j<z[0].length; j++)
                 sigm[i][j] = 1.0/(1.0 + Math.exp(-z[i][j])); 

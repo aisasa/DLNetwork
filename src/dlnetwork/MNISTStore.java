@@ -4,6 +4,12 @@ import mnist2JArrays.*;                     // MNIST txt data to Java arrays
 import java.io.*;                           // IOException, File, I/O streams
 import java.util.zip.*;                     // Zip/unzip files
 
+/**
+ * A warehouse to store MNIST Java data structures.
+ * 
+ * @version 0.9
+ * @author  Agustin Isasa Cuartero
+ */
 public class MNISTStore {
     private static double[][] trainingDataIn;   
     private static double[] trainingDataOut; 
@@ -12,6 +18,13 @@ public class MNISTStore {
     private static double[][] testDataIn;
     private static double[] testDataOut;
     
+    /**
+     * Transfer MNIST data from previously saved files to proper Java data
+     * structures
+     * 
+     * @throws IOException              If file does not exist
+     * @throws ClassNotFoundException   If array does not exist in saved files
+     */
     public static void loadMNISTArrays() throws IOException, ClassNotFoundException{
         File fTrainingIn = new File("trainingIn.dat");
         File fTrainingOut = new File("trainingOut.dat");
@@ -48,42 +61,93 @@ public class MNISTStore {
     }
     
     // Shuffle data sets
-    public static void shuffleMNIST(){
+    /**
+     * A procedure to shuffle data training set to get stochastic improvements 
+     * in training execution.
+     * 
+     */
+        public static void shuffleMNIST(){
         DLMath.shuffle(trainingDataIn, trainingDataOut);
     }
     
     // Object getters
-    public static double[][] getTrainingDataIn(){
+    /**
+     *
+     * @return  A bidimensional array containing the input data from MNIST 
+     * training data set.
+     */
+        public static double[][] getTrainingDataIn(){
         return trainingDataIn;
     }
+    /**
+     *
+     * @return  An array containing the real outputs of each example in MNIST 
+     * training data set.
+     */
     public static double[] getTrainingDataOut(){
         return trainingDataOut;
     }
+    /**
+     *
+     * @return  A bidimensional array containing the input data from MNIST 
+     * validation data set.
+     */
     public static double[][] getValidationDataIn(){
         return validationDataIn;
     }
+    /**
+     *
+     * @return  An array containing the real outputs of each example in MNIST 
+     * validation data set.
+     */
     public static double[] getValidationDataOut(){
         return validationDataOut;
     }
+    /**
+     *
+     * @return  A bidimensional array containing the input data from MNIST 
+     * test data set.
+     */
     public static double[][] getTestDataIn(){
         return testDataIn;
     }
+    /**
+     *
+     * @return  An array containing the real outputs of each example in MNIST 
+     * test data set.
+     */
     public static double[] getTestDataOut(){
         return testDataOut;
     }
+    
     // Size getters
-    public static int getTrainingDataSize(){
+    /**
+     *
+     * @return  Size of MNIST training data set size.
+     */
+        public static int getTrainingDataSize(){
         return trainingDataIn.length;
     }
+    /**
+     *
+     * @return  Size of each input example in MNIST training data size.
+     */
     public static int getInputSize(){
         return trainingDataIn[0].length; 
     }
+    /**
+     *
+     * @return  Size of MNIST validation data set size.
+     */
     public static int getValidationDataSize(){
         return validationDataIn.length;
     }
+    /**
+     *
+     * @return  Size of MNIST test data set size.
+     */
     public static int getTestDataSize(){
         return testDataIn.length;
     }
 
-    
 }
