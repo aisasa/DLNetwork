@@ -24,6 +24,6 @@ initialization of weights with Math.random () / 100 and biases with Math.random 
 (say 20-40), between 98.30% and 98.40% of success in the recognition of the MNIST set, with scores in 98.50%-98.60% in less than a hundred
 epochs.
 
-Use: ready to load data sets from enclosed zipped files. In the source directory execute DLRun.java as usual. Modify parameters (in DLRun.java) and code (surely in DLNetwork.java, main(), DLInit.java, or whatever) as needed. 
+Use: ready to load data sets from enclosed Java arrays (internally zipped) files. In the source directory execute DLRun.java as usual. Modify parameters (in DLRun.java) and code (surely in DLNetwork.java, main(), DLInit.java, or whatever) as needed. 
 
 Educational purposes only, without warranty of any kind (see license).
