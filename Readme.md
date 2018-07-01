@@ -28,7 +28,7 @@ public class DLRun {
     public static void main(String[] args) throws IOException, ClassNotFoundException{
         // 1. Network constructor parameters
         // Defining neural net shape
-        int[] initShape = {784, 784, 10}; 
+        int[] initShape = {784, 200, 10}; 
         // Cost function
         DLNetwork.CostFn costF = DLNetwork.CostFn.CROSS_ENTROPY;        // QUADRATIC | CROSS_ENTROPY   
         // Init learning rate (fine tune of weights/biases variations) and possible adaptation
