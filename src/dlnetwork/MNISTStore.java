@@ -58,6 +58,7 @@ public class MNISTStore {
                 new GZIPInputStream(new FileInputStream(fTestOut)))){ 
             testDataOut = (double[])in.readObject();
         }
+        System.out.println("MNIST data set loaded");
     }
     
     // Shuffle data sets

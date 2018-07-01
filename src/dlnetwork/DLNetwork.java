@@ -19,21 +19,21 @@ public class DLNetwork {
     public static enum Reglz{NO, L2};       // Regularization type, if any
     protected Reglz regularization;
     protected double lambda;                // L2 regularization lambda parameter
-    public static enum AdaptLRate{NO, SQRT, QUAD, LIN}; // Adaptative learning, if any
+    public static enum AdaptLRate{NO, LIN, QUAD, SQRT}; // Adaptative learning, if any
     protected AdaptLRate adaptLearnRate;
     protected double linSlope;              // Slope of line equation for LIN     
     public int bestSuccessRate;             // Best score between successes in an epoch
     public boolean saveBest = true;         // Save the best score?
-    // Variables
-    protected double[][] x;                 // Input array
+    // Variables (all vectors treated as matrices with one row OR one column)
+    protected double[][] x;                 // Input array                        
     protected double[] realOut;             // Real result linked to an entry
     protected ArrayList <double[][]> w;     // List of weights' matrices     
-    protected ArrayList <double[]> b;       // List of biases' arrays
-    protected ArrayList <double[][]> z;     // List of zs' (linear results) arrays
-    protected ArrayList <double[][]> y;     // List of outputs' (sigmoided) arrays
-    protected ArrayList <double[][]> deltas;// Backpropagated errors
-    protected ArrayList <double[][]> gradW; // Gradient weights
-    protected ArrayList <double[][]> gradB; // Gradient biases
+    protected ArrayList <double[][]> b;     // List of biases' arrays      
+    protected ArrayList <double[][]> z;     // List of zs' (linear results) arrays  
+    protected ArrayList <double[][]> y;     // List of outputs' (sigmoided) arrays  
+    protected ArrayList <double[][]> deltas;// Backpropagated errors                
+    protected ArrayList <double[][]> gradW; // Gradient weights                     
+    protected ArrayList <double[][]> gradB; // Gradient biases                      
     // Execution layout
     protected int epochs;                   // How many times we treat the entire training data set
     protected boolean shuffleSets;          // Shuffle or not training sets between epochs?
@@ -68,7 +68,7 @@ public class DLNetwork {
         epochs = epch;
         shuffleSets = shuffle;
         // For the entire training set each time, and for several times (epochs):
-        System.out.println("Starting computation (" + epochs + " epochs): " + new java.util.Date());
+        System.out.println("Starting computation (" + epochs + " epochs; shuffle " + shuffleSets + "): " + new java.util.Date());
         for(int i =0; i<epochs; i++){
             // 1. Go SGD passing an appropriate size of minibatch
             doSGD(miniBatch);
@@ -164,7 +164,7 @@ public class DLNetwork {
         }
         // 5. Once test done, update learning rate according to error obtained
         if(adaptLearnRate != AdaptLRate.NO){
-            double percent = success*100/MNISTStore.getTestDataSize();
+            double percent = success*100.0/(double)MNISTStore.getTestDataSize();
             updateLearnRate((100.0 - percent)/100.0);   // Error = (100 - percent of success)/100
         }
         // 6. Save if best model
@@ -183,7 +183,7 @@ public class DLNetwork {
             in = DLMath.dotProd(w.get(i), in);
             // 2. Add bias
             for(int j=0; j<in.length; j++)
-                in[j][0] += b.get(i)[j];
+                in[j][0] += b.get(i)[0][j];
             // 3. Include linear operations array in z and sigmoid array in y
             double[][] in_copy = new double[in.length][in[0].length];
             System.arraycopy(in, 0, in_copy, 0, in.length);
@@ -256,14 +256,21 @@ public class DLNetwork {
         // b_l = b_l - learningRate*dC/db_l (see computeGradient() for dC/db_l)
         for(int i=0; i<w.size(); i++)
             for(int j=0; j<w.get(i).length; j++)
-                b.get(i)[j] = b.get(i)[j] - (learnRate * gradB.get(i)[j][0]/mb);
+                b.get(i)[0][j] = b.get(i)[0][j] - (learnRate * gradB.get(i)[j][0]/mb);
     }
     
     private void updateLearnRate(double error){
-        if((adaptLearnRate == AdaptLRate.LIN) && (error < ERR_THR))
-            // newLearnRate = slope*error + minLearnRate, where...
-            learnRate = linSlope * error + MIN_LRN_R;
-            // ...slope = (initLearnRate-minLearnRate)/errorActivationThreshold
+        if(error < ERR_THR){
+            if(adaptLearnRate == AdaptLRate.LIN)
+                // newLearnRate = slope*error + minLearnRate, where...
+                learnRate = linSlope * error + MIN_LRN_R;
+                // ...slope = (initLearnRate-minLearnRate)/errorActivationThreshold
+            else if(adaptLearnRate == AdaptLRate.QUAD)
+                learnRate = error*error/ERR_THR;
+            else if(adaptLearnRate == AdaptLRate.SQRT)
+                // newLearnRate = sqrt(sqrt(error * ERR_THR^3))
+                learnRate = Math.pow(error * Math.pow(ERR_THR, 3), 1.0/4.0);
+        }
     }
     
     public boolean saveModel(int success) throws IOException{
@@ -287,8 +294,8 @@ public class DLNetwork {
         System.out.println("· Cost function: " + costFunction);
         System.out.println("· Learning rate: " + learnRate);
         System.out.println("· Adaptative learning rate: " + adaptLearnRate);
-        if(adaptLearnRate == DLNetwork.AdaptLRate.LIN){
-            System.out.println("    Error threshold: " + DLNetwork.ERR_THR);
+        if(adaptLearnRate != DLNetwork.AdaptLRate.NO) {
+            System.out.println("    Activation error threshold: " + DLNetwork.ERR_THR);
             System.out.println("    Minimum learn rate: " + DLNetwork.MIN_LRN_R);
         }
         System.out.println("· Regularization: " + regularization);

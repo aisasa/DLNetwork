@@ -16,7 +16,7 @@ public class DLInit {
         wbInitType = initT;
         wbArrays = new ArrayList<>();
         ArrayList <double[][]> w = new ArrayList(netShape.length - 1);
-        ArrayList <double[]> b = new ArrayList(netShape.length - 1);
+        ArrayList <double[][]> b = new ArrayList(netShape.length - 1);  // []
         if((wbInitType == WBInitType.RANDOM) || (wbInitType == WBInitType.RAND_AND_SAVE)){
             w = _initW(netShape);  
             b = _initB(netShape);
@@ -47,7 +47,7 @@ public class DLInit {
             u = new double[netShape[i]][netShape[i-1]]; 
             for(int j=0; j<netShape[i]; j++)
                 for(int k=0; k<netShape[i-1]; k++)
-                    u[j][k] = (Math.random()-0.5)/100;  
+                    u[j][k] = (Math.random()-0.5)/100.0;  
             w.add(u);
         }
         // Saving the initialization weights for future reference in tests, if chosen
@@ -60,15 +60,15 @@ public class DLInit {
         return w;
     }
     
-    private static ArrayList<double[]> _initB(int[] netShape) throws IOException, ClassNotFoundException{
+    private static ArrayList<double[][]> _initB(int[] netShape) throws IOException, ClassNotFoundException{
         // Initializing network biases           
         int nLayers = netShape.length;
-        ArrayList <double[]> b = new ArrayList(nLayers - 1);    // List of biases' arrays
-        double[] v;
+        ArrayList <double[][]> b = new ArrayList(nLayers - 1);    // List of biases' arrays
+        double[][] v;
         for(int i=1; i<nLayers; i++){
-            v = new double[netShape[i]];
+            v = new double[1][netShape[i]];
             for(int j=0; j<netShape[i]; j++)
-                v[j] = (Math.random()-0.5)/50; 
+                v[0][j] = (Math.random()-0.5)/50.0; 
             b.add(v);            
         } 
         // Saving the initialization biases for future reference in tests, if chosen
@@ -91,12 +91,12 @@ public class DLInit {
         return w;
     }
     
-    private static ArrayList<double[]> _loadB(String fName) throws IOException, ClassNotFoundException{
+    private static ArrayList<double[][]> _loadB(String fName) throws IOException, ClassNotFoundException{
         if(fName.equals(""))
             bFileName = "initial_B.dat";     // [initial_B.dat | bs9XXX.dat]
-        ArrayList <double[]> b;
+        ArrayList <double[][]> b;
         try(ObjectInputStream in = new ObjectInputStream(new GZIPInputStream(new FileInputStream(bFileName)))){ 
-                b = (ArrayList<double[]>)in.readObject();
+                b = (ArrayList<double[][]>)in.readObject();
             }
         return b;
     }

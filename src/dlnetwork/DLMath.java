@@ -3,7 +3,7 @@ package dlnetwork;
 import java.util.*;                         // ArrayList, Random
 
 public class DLMath {
-    
+    // Matrix x Matrix dot product
     public static double[][] dotProd(double[][] a, double[][] b){
         int nRowsA = a.length;
         int nColsA = a[0].length;
@@ -97,4 +97,5 @@ public class DLMath {
             b[j] = tempB;
         }
     }
+
 }
