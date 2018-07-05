@@ -58,7 +58,7 @@ public class DLRun {
 }
 ```
 
-A screenshot from an execution with early emergence of 98s %:
+A screenshot from an execution with early achievement of 98s %:
 
 ![Alt text](https://github.com/aisasa/DLNetworkJ/blob/master/A%20promising%20start.png "A promising start!")
 
