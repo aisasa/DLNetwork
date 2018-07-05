@@ -18,7 +18,7 @@ Michael's approach instead to consider neuron abstractions.
 Building this software has been one of the best ways to follow and understand the fundamentals of deep learning that Michael Nielsen 
 explains in his work. 
 
-The software works, and in particular conditions (shape {784, 100 to 800, 10}, cross-entropy cost function, with mini-batch=1 or with minimum size, learn rate = 0.07, initialization of weights with Math.random ()/100.0 and biases with Math.random ()/50.0) is able to obtain, in a moderate amount of epochs (say 30-40), around 98.20%-98,30%  of success in the recognition of the MNIST set, with scores in 98.50%-98.60% in less than a hundred epochs with some fortunate initialization files and parameters setup.
+The software works, and in particular conditions (shape {784, 100 to 800, 10}, cross-entropy cost function, with mini-batch=1 or with minimum size, learn rate = 0.12, initialization of weights with ```Math.random ()-0.5``` and biases with ```Math.random ()-0.5)``` is able to obtain, in a moderate amount of epochs (say 30-40), around 98.20%-98,30%  of success in the recognition of the MNIST set, with scores in 98.50%-98.60% in less than a hundred epochs with some fortunate initialization files and parameters setup.
 
 Use: ready to load data sets from enclosed Java arrays files. In the source directory execute DLRun.java as usual. Modify parameters (in DLRun.java) and code (surely in DLNetwork.java, ```main()```, DLInit.java, or whatever) as needed. The interface in ```main()``` (DLRun.java file) is reasonably clear and allows inmediate changes (play!) in essential parameters:
 
@@ -57,5 +57,9 @@ public class DLRun {
     }
 }
 ```
+
+A screenshot from an execution with early emergence of 98s %:
+
+![Alt text](https://github.com/aisasa/DLNetworkJ/blob/master/A%20promising%20start.png "A promising start!")
 
 Educational purposes only, without warranty of any kind (see license).
