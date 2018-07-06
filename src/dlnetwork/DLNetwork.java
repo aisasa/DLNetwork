@@ -6,9 +6,8 @@ import java.util.zip.*;                     // Zip/unzip files
 
 public class DLNetwork {
     // Constants
-    static final int MIN_SCORE_REF = 9840;  // Min. success rate to save weights and biases
     static final double MIN_LRN_R = 0.0001; // Min. learn rate
-    static final double ERR_THR = 0.035;    // Error threshold to activate adapt. learning rate
+    static final double ERR_THR = 0.035;    // Error threshold to activate adapt. learning rate 
     // Parameters
     protected int[] netShape;               // Neural network structure
     protected int nLayers;                  // # of layers
@@ -19,11 +18,9 @@ public class DLNetwork {
     public static enum Reglz{NO, L2};       // Regularization type, if any
     protected Reglz regularization;
     protected double lambda;                // L2 regularization lambda parameter
-    public static enum AdaptLRate{NO, LIN, QUAD, SQRT}; // Adaptative learning, if any
+    public static enum AdaptLRate{NO, LIN, QUAD, SQRT}; // Adaptive learning, if any
     protected AdaptLRate adaptLearnRate;
     protected double linSlope;              // Slope of line equation for LIN     
-    public int bestSuccessRate;             // Best score between successes in an epoch
-    public boolean saveBest = true;         // Save the best score?
     // Variables (all vectors treated as matrices with one row OR one column)
     protected double[][] x;                 // Input array                        
     protected double[] realOut;             // Real result linked to an entry
@@ -31,13 +28,16 @@ public class DLNetwork {
     protected ArrayList <double[][]> b;     // List of biases' arrays      
     protected ArrayList <double[][]> z;     // List of zs' (linear results) arrays  
     protected ArrayList <double[][]> y;     // List of outputs' (sigmoided) arrays  
-    protected ArrayList <double[][]> deltas;// Backpropagated errors                
-    protected ArrayList <double[][]> gradW; // Gradient weights                     
-    protected ArrayList <double[][]> gradB; // Gradient biases                      
+    protected ArrayList <double[][]> deltas;// Backpropagated errors arrays               
+    protected ArrayList <double[][]> gradW; // Gradient weights arrays                    
+    protected ArrayList <double[][]> gradB; // Gradient biases arrays                      
     // Execution layout
     protected int epochs;                   // How many times we treat the entire training data set
     protected boolean shuffleSets;          // Shuffle or not training sets between epochs?
-   
+    protected boolean saveBest = false;     // Save the best score model? (from minScoreRef)
+    protected int minScoreRef;              // Minimum score from which to record best results
+    protected int bestSuccessRate;          // Best score between successes in an epoch 
+    
     DLNetwork(int[] shape, double lr, CostFn cFn, Reglz reg, double lmbd, AdaptLRate adLR, int mBatch, DLInit.WBInitType initT) 
             throws IOException, ClassNotFoundException{
         // Network layout
@@ -51,9 +51,7 @@ public class DLNetwork {
         adaptLearnRate = adLR;              
         if(adaptLearnRate == AdaptLRate.LIN) // If lineal: newLearnRate = slope*error + errorMin
             linSlope = (learnRate-MIN_LRN_R)/ERR_THR;   // First compute slope
-        // Others
         miniBatch = mBatch;
-        bestSuccessRate = MIN_SCORE_REF;
         // Initatilizing weights and biases 
         ArrayList<ArrayList> wbContainer = DLInit.initWB(initT, netShape);
         w = wbContainer.get(0); //(ArrayList<double[][]>)DLInit.wbArrays.get(0);
@@ -67,8 +65,14 @@ public class DLNetwork {
     public void start(int epch, boolean shuffle) throws IOException{
         epochs = epch;
         shuffleSets = shuffle;
+        System.out.println("Starting computation: "); 
+        System.out.println("· Epochs: " + epochs);
+        System.out.println("· Shuffle: " + shuffleSets);
+        System.out.println("· Record best results model: " + saveBest);
+        if(saveBest)
+            System.out.println("    Record from success: " + minScoreRef);
+        System.out.println("· Start time: " + new java.util.Date());
         // For the entire training set each time, and for several times (epochs):
-        System.out.println("Starting computation (" + epochs + " epochs; shuffle " + shuffleSets + "): " + new java.util.Date());
         for(int i =0; i<epochs; i++){
             // 1. Go SGD passing an appropriate size of minibatch
             doSGD(miniBatch);
@@ -80,6 +84,13 @@ public class DLNetwork {
             // 4. And go for another one.
         }
         System.out.println("End computation: " + new java.util.Date());
+    }
+    // If save best scored model, start() admits minimum score to start record from
+    public void start(int epch, boolean shuffle, int minScore) throws IOException{
+        saveBest = true;   
+        minScoreRef = minScore;
+        bestSuccessRate = minScoreRef;
+        this.start(epch, shuffle);
     }
     
     protected void doSGD(int mb) throws IOException{  // Mini-batch as parameter
@@ -122,7 +133,7 @@ public class DLNetwork {
             y = new ArrayList(nLayers);        
         }
         
-        /*// Stochastic Gradient Descent simplified first code for fixed mini-batch = 1  
+        /*// Stochastic Gradient Descent minimal first code for mini-batch = 1  
         for(int i=0; i<MNISTloader.getTrainingDataSize(); i++){     
             for(int k=0; k<MNISTloader.getInputSize(); k++)
                 x[k][0] = MNISTloader.getTrainingDataIn()[i][k];
@@ -148,7 +159,7 @@ public class DLNetwork {
                 x[j][0] = MNISTStore.getTestDataIn()[i][j];    // get[Test|Validation]DataIn
             y.add(x);                       // Add input as first y
             // ...and tied realOut result
-            realOut = DLMath.getOutputVector((int)MNISTStore.getTestDataOut()[i]);    // get[Test|Validation]DataOut
+            realOut = DLMath.getOutputVector((int)MNISTStore.getTestDataOut()[i]); // get[Test|Validation]DataOut
             // 2. Do feed forward
             feedForward(x);               
             // 3. Take result of network, y, treat it,...
@@ -276,9 +287,9 @@ public class DLNetwork {
     public boolean saveModel(int success) throws IOException{
         try{
             ObjectOutputStream out = 
-                    new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream("ws" + success + ".dat")));
+                    new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream("ws" + success + "-" + Arrays.toString(netShape) + ".dat")));
             out.writeObject(w);
-            out = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream("bs" + success + ".dat")));
+            out = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream("bs" + success + "-" + Arrays.toString(netShape) + ".dat")));
             out.writeObject(b);
             }
         catch(IOException e){
@@ -293,7 +304,7 @@ public class DLNetwork {
         System.out.println("· Shape: " + Arrays.toString(netShape));
         System.out.println("· Cost function: " + costFunction);
         System.out.println("· Learning rate: " + learnRate);
-        System.out.println("· Adaptative learning rate: " + adaptLearnRate);
+        System.out.println("· Adaptive learning rate: " + adaptLearnRate);
         if(adaptLearnRate != DLNetwork.AdaptLRate.NO) {
             System.out.println("    Activation error threshold: " + DLNetwork.ERR_THR);
             System.out.println("    Minimum learn rate: " + DLNetwork.MIN_LRN_R);
@@ -303,6 +314,14 @@ public class DLNetwork {
             System.out.println("    L2 lambda: " + lambda);
         System.out.println("· Mini batch: " + miniBatch);
         System.out.println("· Initialice weights/biases: " + DLInit.wbInitType);
+        if(DLInit.wbInitType == DLInit.WBInitType.LOAD_PRE_SAVED || DLInit.wbInitType == DLInit.WBInitType.LOAD_BY_NAME){
+            System.out.println("    Weights file: " + DLInit.wFileName);
+            System.out.println("    Biases file: " + DLInit.bFileName);
+        }
+        if(DLInit.wbInitType == DLInit.WBInitType.RANDOM || DLInit.wbInitType == DLInit.WBInitType.RAND_AND_SAVE){
+            System.out.println("    Random subtraction: " + DLInit.RND_SUBT);
+            System.out.println("    Random divisor: " + DLInit.RND_DIV);
+        }
     }
     
 }
