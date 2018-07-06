@@ -23,7 +23,7 @@ public class DLNetwork {
     protected double linSlope;              // Slope of line equation for LIN     
     // Variables (all vectors treated as matrices with one row OR one column)
     protected double[][] x;                 // Input array                        
-    protected double[] realOut;             // Real result linked to an entry
+    protected double[][] realOut;             // Real result linked to an entry
     protected ArrayList <double[][]> w;     // List of weights' matrices     
     protected ArrayList <double[][]> b;     // List of biases' arrays      
     protected ArrayList <double[][]> z;     // List of zs' (linear results) arrays  
@@ -60,6 +60,7 @@ public class DLNetwork {
         z = new ArrayList(nLayers - 1);     // Inputs' arrays in each layer (except l1) 
         y = new ArrayList(nLayers);         // Activations: y = sigmoid(z)
         x = new double[MNISTStore.getInputSize()][1];   // Array x contains each training example input   
+        realOut = new double[1][1];         // Real result vector of each training example
     }
     
     public void start(int epch, boolean shuffle) throws IOException{
@@ -107,7 +108,7 @@ public class DLNetwork {
                 // ...and include it as first 'y' as needed later in computeGradient()
                 y.add(x);    
                 // 2. Load the real result linked to the example
-                realOut = DLMath.getOutputVector((int)MNISTStore.getTrainingDataOut()[i+j]);
+                realOut[0] = DLMath.getOutputVector((int)MNISTStore.getTrainingDataOut()[i+j]);
                 // 3. Compute the SGD process as learning algorithm...
                 feedForward(x);             // Feed forwarding
                 computeError();             // Output error
@@ -159,7 +160,7 @@ public class DLNetwork {
                 x[j][0] = MNISTStore.getTestDataIn()[i][j];    // get[Test|Validation]DataIn
             y.add(x);                       // Add input as first y
             // ...and tied realOut result
-            realOut = DLMath.getOutputVector((int)MNISTStore.getTestDataOut()[i]); // get[Test|Validation]DataOut
+            realOut[0] = DLMath.getOutputVector((int)MNISTStore.getTestDataOut()[i]); // get[Test|Validation]DataOut
             // 2. Do feed forward
             feedForward(x);               
             // 3. Take result of network, y, treat it,...
@@ -170,7 +171,7 @@ public class DLNetwork {
                 maxIndex = y_t[j] > y_t[maxIndex] ? j : maxIndex;
             y_t = DLMath.getOutputVector(maxIndex);
             // 4. Finally compare both results and accumulate successes
-            if(Arrays.equals(y_t, realOut))
+            if(Arrays.equals(y_t, realOut[0]))
                 success++;
         }
         // 5. Once test done, update learning rate according to error obtained
@@ -210,7 +211,7 @@ public class DLNetwork {
         deltas = new ArrayList(nLayers-1);
         double[][] delta_L = new double[netShape[nLayers-1]][1];
         // (dC/dy_L) = (y_L-realOut)
-        double[] cost_d = DLMath.costQuadDeriv(DLMath.vTranspose(y.get(y.size()-1)), realOut);
+        double[] cost_d = DLMath.costQuadDeriv(DLMath.vTranspose(y.get(y.size()-1)), realOut[0]);
         // sigmoid_deriv(z_L)
         double[][] sigm_d = DLMath.sigmoidDeriv(z.get(z.size()-1));
         // Hadamard product with cost function election
