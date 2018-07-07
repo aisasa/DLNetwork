@@ -23,7 +23,7 @@ public class DLNetwork {
     protected double linSlope;              // Slope of line equation for LIN     
     // Variables (all vectors treated as matrices with one row OR one column)
     protected double[][] x;                 // Input array                        
-    protected double[][] realOut;             // Real result linked to an entry
+    protected double[][] realOut;           // Real result linked to an entry
     protected ArrayList <double[][]> w;     // List of weights' matrices     
     protected ArrayList <double[][]> b;     // List of biases' arrays      
     protected ArrayList <double[][]> z;     // List of zs' (linear results) arrays  
@@ -36,7 +36,7 @@ public class DLNetwork {
     protected boolean shuffleSets;          // Shuffle or not training sets between epochs?
     protected boolean saveBest = false;     // Save the best score model? (from minScoreRef)
     protected int minScoreRef;              // Minimum score from which to record best results
-    protected int bestSuccessRate;          // Best score between successes in an epoch 
+    protected int bestSuccessRate;          // Best successes score between epochs 
     
     DLNetwork(int[] shape, double lr, CostFn cFn, Reglz reg, double lmbd, AdaptLRate adLR, int mBatch, DLInit.WBInitType initT) 
             throws IOException, ClassNotFoundException{
@@ -88,9 +88,9 @@ public class DLNetwork {
     }
     // If save best scored model, start() admits minimum score to start record from
     public void start(int epch, boolean shuffle, int minScore) throws IOException{
-        saveBest = true;   
-        minScoreRef = minScore;
-        bestSuccessRate = minScoreRef;
+        saveBest = true;                    // Save models (weights/biases; see doTest())...
+        minScoreRef = minScore;             // ...with better result than passed reference...
+        bestSuccessRate = minScoreRef;      // ...suitably indexed
         this.start(epch, shuffle);
     }
     
@@ -157,7 +157,7 @@ public class DLNetwork {
         for(int i=0; i<MNISTStore.getTestDataSize(); i++){     
             for(int j=0; j<MNISTStore.getInputSize(); j++)
                 // ...both input...
-                x[j][0] = MNISTStore.getTestDataIn()[i][j];    // get[Test|Validation]DataIn
+                x[j][0] = MNISTStore.getTestDataIn()[i][j]; // get[Test|Validation]DataIn
             y.add(x);                       // Add input as first y
             // ...and tied realOut result
             realOut[0] = DLMath.getOutputVector((int)MNISTStore.getTestDataOut()[i]); // get[Test|Validation]DataOut
@@ -257,9 +257,9 @@ public class DLNetwork {
         // Updating weights and biases (note averaged gradients by /mb):
         // First compute regularization parameter factor. 
         double regParam = 1.0;
-        if(regularization == Reglz.NO);     // Do nothing, regParam = 1
-        else if(regularization == Reglz.L2) // If L2, 1-learnRate*(lambda/trainingSize):
-            regParam = 1-learnRate*(lambda/MNISTStore.getTrainingDataSize());   //getTrainingDataSize());
+        // if regularization == Reglz.NO do nothing and regParam = 1. But
+        if(regularization == Reglz.L2) // If L2, 1-learnRate*(lambda/trainingSize):
+            regParam = 1-learnRate*(lambda/MNISTStore.getTrainingDataSize());   
         // w_l = w_l - learningRate*dC/dw_l (see computeGradient() for dC/dw_l)
         for(int i=0; i<w.size(); i++)
             for(int j=0; j<w.get(i).length; j++)
@@ -290,8 +290,10 @@ public class DLNetwork {
             ObjectOutputStream out = 
                     new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream("ws" + success + "-" + Arrays.toString(netShape) + ".dat")));
             out.writeObject(w);
+            out.close();
             out = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream("bs" + success + "-" + Arrays.toString(netShape) + ".dat")));
             out.writeObject(b);
+            out.close();
             }
         catch(IOException e){
             return false;

@@ -26,8 +26,8 @@ public class DLInit {
             b = _initB(netShape);
         }
         else if(wbInitType == WBInitType.LOAD_PRE_SAVED){
-            w = _loadW("");    // [initial_W.dat | ws9XXX.dat]
-            b = _loadB("");    // [initial_B.dat | bs9XXX.dat]
+            w = _loadW("");                 // [initial_W.dat | ws9XXX....dat]
+            b = _loadB("");                 // [initial_B.dat | bs9XXX....dat]
         }
         else if(wbInitType == WBInitType.LOAD_BY_NAME){
             System.out.println("Enter weights file name: ");
@@ -56,6 +56,7 @@ public class DLInit {
         if(wbInitType == WBInitType.RAND_AND_SAVE){
             try(ObjectOutputStream out = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream("initial_W.dat")))){
                     out.writeObject(w);
+                    out.close();
                 }
             System.out.println("Initial weights data saved");
         }
@@ -77,6 +78,7 @@ public class DLInit {
         if(wbInitType == WBInitType.RAND_AND_SAVE){
             try(ObjectOutputStream out = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream("initial_B.dat")))){
                     out.writeObject(b);
+                    out.close();
                 }
             System.out.println("Initial biases data saved");
         }
