@@ -60,6 +60,10 @@ public class DLRun {
 
 A screenshot from an execution with early achievement of 98s %:
 
-<img src="https://github.com/aisasa/DLNetworkJ/blob/master/A%20promising%20start.png" width="500">
+<img src="https://github.com/aisasa/DLNetworkJ/blob/master/medley/A%20promising%20start.png" width="500">
+
+And with a particularly interesting setup:
+
+<img src="https://github.com/aisasa/DLNetworkJ/blob/master/medley/Screenshot2.png" width="500">
 
 Educational purposes only, without warranty of any kind (see license).
