@@ -62,7 +62,7 @@ A screenshot from an execution with early achievement of 98s %:
 
 <img src="https://github.com/aisasa/DLNetworkJ/blob/master/medley/A%20promising%20start.png" width="500">
 
-And with a particularly interesting setup:
+And with a particularly interesting setup (and after some changes in presentation):
 
 <img src="https://github.com/aisasa/DLNetworkJ/blob/master/medley/Screenshot2.png" width="500">
 
