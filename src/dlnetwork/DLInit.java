@@ -4,6 +4,13 @@ import java.util.*;                         // ArrayList and Arrays
 import java.io.*;                           // IOException, I/O streams
 import java.util.zip.*;                     // Zip/unzip files
 
+/**
+ * A set of different procedures to initialize the weights and biases sets in a
+ * deep learning network.
+ * 
+ * @version 0.9
+ * @author  Agustin Isasa Cuartero
+ */
 public class DLInit {
     // Constants
     protected final static double RND_SUBT = 0.5;   // Random subtraction -> [-0.5, 0.5]
@@ -16,6 +23,27 @@ public class DLInit {
     protected static String wFileName;
     protected static String bFileName;
     
+    /**
+     * Entry method to some different ways to initialize weights and biases
+     * sets of a deep learning network.
+     * 
+     * @param initT     Type of initialization. It can be:
+     *                  · RANDOM: initial random results in (0, 1) range, 
+     *                  modified then by RND_SUBT and/or RND_DIV.
+     *                  · RAND_AND_SAVE: same that RANDOM but recording weights
+     *                  and biases to reuse in performance comparations.
+     *                  · LOAD_PRE_SAVED: directly load of las weights and 
+     *                  biases sets previously saved with RAND_AND_SAVE.
+     *                  · LOAD_BY_NAME: load manually (by console dialogue) sets
+     *                  of weights and biases previously saved (for instance,
+     *                  with the record from a minimum score option).
+     * @param netShape  Network shape in a vector form, that is, in which each 
+     *                  element is the size of its respective layer.
+     * @return          An array list containing both sets of initialized 
+     *                  weights and biases.
+     * @throws          java.io.IOException
+     * @throws          java.lang.ClassNotFoundException
+     */
     public static ArrayList<ArrayList> initWB(WBInitType initT, int[] netShape) throws IOException, ClassNotFoundException{
         wbInitType = initT;
         wbArrays = new ArrayList<>();
@@ -39,6 +67,7 @@ public class DLInit {
         wbArrays.add(b);
         return wbArrays; 
     }
+    
     
     private static ArrayList<double[][]> _initW(int[] netShape) throws IOException, ClassNotFoundException{ 
         // Initializing network weights

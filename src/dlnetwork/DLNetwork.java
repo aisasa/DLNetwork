@@ -180,7 +180,7 @@ public class DLNetwork {
             updateLearnRate((100.0 - percent)/100.0);   // Error = (100 - percent of success)/100
         }
         // 6. Save if best model
-        if(saveBest && (success > bestSuccessRate)){
+        if(saveBest && (success >= bestSuccessRate)){   // Even the same, usually better last score
             bestSuccessRate = success;
             if(saveModel(bestSuccessRate))
                 System.out.println("Saved w and b lists as best scored: "); 
