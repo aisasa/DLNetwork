@@ -8,16 +8,32 @@ import java.util.zip.*;                     // Zip/unzip files
  * A set of different procedures to initialize the weights and biases sets in a
  * deep learning network.
  * 
- * @version 0.9
  * @author  Agustin Isasa Cuartero
+ * @version 0.9
  */
 public class DLInit {
     // Constants
     protected final static double RND_SUBT = 0.5;   // Random subtraction -> [-0.5, 0.5]
     protected final static double RND_DIV = 1.0;    // Random divisor
     // Var
-    protected static ArrayList<ArrayList> wbArrays; // Weights and biases arrays in a container
+    private static ArrayList<ArrayList> wbArrays; // Weights and biases arrays in a container
     // Clean init | Clean init & save | Load previous saved random set | Load a set by console
+    /**
+     * Enum with the different initialization types of elements in weights and 
+     * biases sets. Type can be:
+     * <ul>
+     * <li>RANDOM: initial random results in (0, 1) range, modified then by 
+     * RND_SUBT and/or RND_DIV.
+     * <li>RAND_AND_SAVE: same that RANDOM but recording weights and biases to 
+     * reuse in performance comparations, if needed.
+     * <li>LOAD_PRE_SAVED: directly load of last weights and biases sets 
+     * previously saved with RAND_AND_SAVE.
+     * <li>LOAD_BY_NAME: load manually (by console dialogue) weights and 
+     * biases sets previously saved (for instance, with the record from a 
+     * minimum score option).
+     * </ul>
+     * 
+     */
     protected static enum WBInitType{RANDOM, RAND_AND_SAVE, LOAD_PRE_SAVED, LOAD_BY_NAME};
     protected static WBInitType wbInitType;
     protected static String wFileName;
@@ -28,21 +44,23 @@ public class DLInit {
      * sets of a deep learning network.
      * 
      * @param initT     Type of initialization. It can be:
-     *                  · RANDOM: initial random results in (0, 1) range, 
+     *                  <ul>
+     *                  <li>RANDOM: initial random results in (0, 1) range, 
      *                  modified then by RND_SUBT and/or RND_DIV.
-     *                  · RAND_AND_SAVE: same that RANDOM but recording weights
+     *                  <li>RAND_AND_SAVE: same that RANDOM but recording weights
      *                  and biases to reuse in performance comparations.
-     *                  · LOAD_PRE_SAVED: directly load of las weights and 
+     *                  <li>LOAD_PRE_SAVED: directly load of last weights and 
      *                  biases sets previously saved with RAND_AND_SAVE.
-     *                  · LOAD_BY_NAME: load manually (by console dialogue) sets
-     *                  of weights and biases previously saved (for instance,
+     *                  <li>LOAD_BY_NAME: load manually (by console dialogue) 
+     *                  weights and biases sets previously saved (for instance,
      *                  with the record from a minimum score option).
+     *                  </ul>
      * @param netShape  Network shape in a vector form, that is, in which each 
      *                  element is the size of its respective layer.
      * @return          An array list containing both sets of initialized 
      *                  weights and biases.
-     * @throws          java.io.IOException
-     * @throws          java.lang.ClassNotFoundException
+     * @throws          java.io.IOException                 If file does not exist
+     * @throws          java.lang.ClassNotFoundException    If array does not exist in saved files
      */
     public static ArrayList<ArrayList> initWB(WBInitType initT, int[] netShape) throws IOException, ClassNotFoundException{
         wbInitType = initT;

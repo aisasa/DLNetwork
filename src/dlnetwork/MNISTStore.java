@@ -7,8 +7,8 @@ import java.util.zip.*;                     // Zip/unzip files
 /**
  * A warehouse to store MNIST Java data structures.
  * 
- * @version 0.9
  * @author  Agustin Isasa Cuartero
+ * @version 0.9
  */
 public class MNISTStore {
     private static double[][] trainingDataIn;   

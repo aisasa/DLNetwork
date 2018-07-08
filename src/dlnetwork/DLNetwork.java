@@ -4,41 +4,119 @@ import java.io.*;                           // Write/read files
 import java.util.*;                         // ArrayList and Arrays
 import java.util.zip.*;                     // Zip/unzip files
 
+/**
+ * A basic deep learning network structure based in gradient descent. Quadratic
+ * and cross-entropy cost functions. L2 regularization. Adaptive learning rate
+ * according to a few simple functions and based in test error. Save best models 
+ * (weights and biases sets) option. Structured around two basic procedures:
+ * <ul>
+ * <li>A class constructor for the network infrastructure (shape and parameters) 
+ * which provides allthe necessary elements under an algebraic (vectors, 
+ * matrices) approach instead of a more oriented POO.
+ * <li>A procedure to start computation, start(), which regulates parameters 
+ * related with the learning execution.
+ * </ul>
+ * 
+ * @author  Agustin Isasa Cuartero
+ * @version 0.9
+ */
 public class DLNetwork {
     // Constants
-    static final double MIN_LRN_R = 0.0001; // Min. learn rate
-    static final double ERR_THR = 0.035;    // Error threshold to activate adapt. learning rate 
-    // Parameters
-    protected int[] netShape;               // Neural network structure
-    protected int nLayers;                  // # of layers
-    protected double learnRate;             // Learning rate
-    protected int miniBatch;                // Subset of the training set. Here, the lower the better
-    public static enum CostFn{QUADRATIC, CROSS_ENTROPY};   // Cost functions
-    protected CostFn costFunction;
-    public static enum Reglz{NO, L2};       // Regularization type, if any
-    protected Reglz regularization;
-    protected double lambda;                // L2 regularization lambda parameter
+    private static final double MIN_LRN_R = 0.0001; // Min. learn rate
+    private static final double ERR_THR = 0.035;    // Error threshold to activate adapt. learning rate 
+    // Enums
+    /**
+     * Enum with the different cost function types. Types can be:
+     * <ul>
+     * <li>QUADRATIC:       a basic quadratic error cost function 
+     * C = 1/2n·(summ_x|y(x)-realResult|^2).
+     * <li>CROSS_ENTROPY:   a more advanced cost function in which
+     * C = -1/n·(summ_x summ_j[y_j·ln a_j + (1-y_j)·ln(1-a_j)]).
+     * </ul>
+     * 
+     */
+    public static enum CostFn{QUADRATIC, CROSS_ENTROPY};   // Cost functions types
+    /**
+     * Enum with the different regularization types. Types can be:
+     * <ul>
+     * <li>NO:  no regularization. 
+     * <li>L2:  L2 regularization, which implies taking into account the use of 
+     *          a lambda parameter
+     * </ul>
+     * 
+     */
+    public static enum Reglz{NO, L2};       // Regularization types, if any
+    /**
+     * Enum with the different learning rate adaptive types. Types can be:
+     * <ul>
+     * <li>NO:      no adaptive learning rate. 
+     * <li>LIN:     linear adaptive learning rate, which implies the use of a 
+     *              linear function of error obtained in tests.
+     * <li>QUAD:    a quadratic function of error obtained in tests.
+     * <li>SQRT:    a function that uses squared roots over error obtained in 
+     *              tests.
+     * </ul>
+     * 
+     */
     public static enum AdaptLRate{NO, LIN, QUAD, SQRT}; // Adaptive learning, if any
-    protected AdaptLRate adaptLearnRate;
-    protected double linSlope;              // Slope of line equation for LIN     
+    // Parameters
+    private final int[] netShape;           // Neural network structure
+    private final int nLayers;              // # of layers
+    private double learnRate;               // Learning rate
+    private final int miniBatch;            // Subset of the training set. Here, the lower the better
+    private final CostFn costFunction;      // Cost function
+    private final Reglz regularization;     // Regularization (or not) type
+    private final double lambda;            // L2 regularization lambda parameter
+    private final AdaptLRate adaptLearnRate;// Learn rate adaptive (or not) type
+    private double linSlope;                // Slope of line equation for LIN     
     // Variables (all vectors treated as matrices with one row OR one column)
-    protected double[][] x;                 // Input array                        
-    protected double[][] realOut;           // Real result linked to an entry
-    protected ArrayList <double[][]> w;     // List of weights' matrices     
-    protected ArrayList <double[][]> b;     // List of biases' arrays      
-    protected ArrayList <double[][]> z;     // List of zs' (linear results) arrays  
-    protected ArrayList <double[][]> y;     // List of outputs' (sigmoided) arrays  
-    protected ArrayList <double[][]> deltas;// Backpropagated errors arrays               
-    protected ArrayList <double[][]> gradW; // Gradient weights arrays                    
-    protected ArrayList <double[][]> gradB; // Gradient biases arrays                      
+    private double[][] x;                   // Input array                        
+    private double[][] realOut;             // Real result linked to an entry
+    private ArrayList <double[][]> w;       // List of weights' matrices     
+    private ArrayList <double[][]> b;       // List of biases' arrays      
+    private ArrayList <double[][]> z;       // List of zs' (linear results) arrays  
+    private ArrayList <double[][]> y;       // List of outputs' (sigmoided) arrays  
+    private ArrayList <double[][]> deltas;  // Backpropagated errors arrays               
+    private ArrayList <double[][]> gradW;   // Gradient weights arrays                    
+    private ArrayList <double[][]> gradB;   // Gradient biases arrays                      
     // Execution layout
-    protected int epochs;                   // How many times we treat the entire training data set
-    protected boolean shuffleSets;          // Shuffle or not training sets between epochs?
-    protected boolean saveBest = false;     // Save the best score model? (from minScoreRef)
-    protected int minScoreRef;              // Minimum score from which to record best results
-    protected int bestSuccessRate;          // Best successes score between epochs 
+    private int epochs;                     // How many times we treat the entire training data set
+    private boolean shuffleSets;            // Shuffle or not training sets between epochs?
+    private boolean saveBest = false;       // Save the best score model? (from minScoreRef)
+    private int minScoreRef;                // Minimum score from which to record best results
+    private int bestSuccessRate;            // Best successes score between epochs 
     
-    DLNetwork(int[] shape, double lr, CostFn cFn, Reglz reg, double lmbd, AdaptLRate adLR, int mBatch, DLInit.WBInitType initT) 
+    /**
+     * Shape the deep learning network and sets up its set of parameters. 
+     * 
+     * @param shape     Vector with sizes of each neuron layer in the network.     
+     * @param lr        Learning rate
+     * @param cFn       Cost function to choose among CostFn.QUADRATIC or 
+     *                  CostFn.CROSS_ENTROPY
+     * @param reg       Regularization type, to choose among Reglz.NO or
+     *                  Reglz.L2.
+     * @param lmbd      Lambda parameter for L2 regularization.
+     * @param adLR      Type of adaptive learning rate, to choose among 
+     *                  AdaptLRate.NO, AdaptLRate.LIN, AdaptLRate.QUAD or
+     *                  AdaptLRate.SQRT.
+     * @param mBatch    Number of examples taken and averaged in every 
+     *                  stochastic gradient descent cycle (minibatch). 
+     * @param initT     Type of weights and biases initialization. It can be:
+     *                  <ul>
+     *                  <li>RANDOM: initial random results in (0, 1) range, 
+     *                  modified then by RND_SUBT and/or RND_DIV.
+     *                  <li>RAND_AND_SAVE: same that RANDOM but recording weights
+     *                  and biases to reuse in performance comparations.
+     *                  <li>LOAD_PRE_SAVED: directly load of last weights and 
+     *                  biases sets previously saved with RAND_AND_SAVE.
+     *                  <li>LOAD_BY_NAME: load manually (by console dialogue) 
+     *                  weights and biases sets previously saved (for instance,
+     *                  with the record from a minimum score option).
+     *                  </ul>
+     * @throws java.io.IOException      If problems with file management.   
+     * @throws ClassNotFoundException   If array does not exist in saved files
+     */
+    public DLNetwork(int[] shape, double lr, CostFn cFn, Reglz reg, double lmbd, AdaptLRate adLR, int mBatch, DLInit.WBInitType initT) 
             throws IOException, ClassNotFoundException{
         // Network layout
         netShape = shape;                       
@@ -63,6 +141,14 @@ public class DLNetwork {
         realOut = new double[1][1];         // Real result vector of each training example
     }
     
+    /**
+     * Starts code execution (mainly SGD and test) over the deep learning
+     * network.
+
+     * @param epch      Number of times (epochs) that training sets are treated.   
+     * @param shuffle   Indicates if training sets are shuffled between epochs.
+     * @throws java.io.IOException  If problems with file management.           
+     */
     public void start(int epch, boolean shuffle) throws IOException{
         epochs = epch;
         shuffleSets = shuffle;
@@ -86,7 +172,17 @@ public class DLNetwork {
         }
         System.out.println("End computation: " + new java.util.Date());
     }
-    // If save best scored model, start() admits minimum score to start record from
+    /**
+     * Starts code execution (mainly SGD and test) over the deep learning
+     * network, admitting a minimum score to start record model (weights and
+     * biases sets) from, if needed for future reference in its initialization.
+     * 
+     * @param epch      Number of times (epochs) that training sets are treated.   
+     * @param shuffle   Indicates if training sets are shuffled between epochs.
+     * @param minScore  Minimum score from which models (weights and biases
+     *                  sets) are saved when needed.
+     * @throws java.io.IOException  If problems with file management.           
+     */
     public void start(int epch, boolean shuffle, int minScore) throws IOException{
         saveBest = true;                    // Save models (weights/biases; see doTest())...
         minScoreRef = minScore;             // ...with better result than passed reference...
@@ -94,7 +190,7 @@ public class DLNetwork {
         this.start(epch, shuffle);
     }
     
-    protected void doSGD(int mb) throws IOException{  // Mini-batch as parameter
+    private void doSGD(int mb) throws IOException{  // Mini-batch as parameter
         // Stochastic Gradient Descent process:
         ArrayList<double[][]> gradWTemp = new ArrayList(nLayers-1);
         ArrayList<double[][]> gradBTemp = new ArrayList(nLayers-1);
@@ -150,7 +246,7 @@ public class DLNetwork {
         }*/
     }
     
-    protected double doTest() throws IOException{
+    private double doTest() throws IOException{
         // Time to confirm network goodness:
         int success = 0;                    // Success counter
         // 1. Loading each example from test data set,...
@@ -285,6 +381,14 @@ public class DLNetwork {
         }
     }
     
+    /**
+     * Records the model (weights and biases arrays) for reuse if wanted.
+     * 
+     * @param success   Number of successes to shape the name of both files, to 
+     *                  which is added the network shape.
+     * @return          A boolean indication about file register achievement.    
+     * @throws java.io.IOException  If problems with file management.           
+     */
     public boolean saveModel(int success) throws IOException{
         try{
             ObjectOutputStream out = 
@@ -301,6 +405,10 @@ public class DLNetwork {
         return true;
     }
     
+    /**
+     * Shows the network parameters as a reference.   
+     * 
+     */
     public void paramRef(){
         // Network parameters reference
         System.out.println("Network reference: ");

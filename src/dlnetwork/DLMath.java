@@ -6,8 +6,8 @@ import java.util.*;                         // ArrayList, Random
  * A collection of math and ancillary functions to serve procedures in network
  * and learning code.
  * 
- * @version 0.9
  * @author  Agustin Isasa Cuartero
+ * @version 0.9
  */
 public class DLMath {
     /**
@@ -32,7 +32,7 @@ public class DLMath {
     }
     
     /**
-     * Method that compute the first derivative of the quadratic cost function;
+     * Computes the first derivative of the quadratic cost function;
      * this cost function is C = 1/2n·(summ_x|y(x)-realResult|^2), and its
      * derivative is thus equal to the subtraction of the real result in
      * each examples from the computed result for that example.
@@ -51,7 +51,7 @@ public class DLMath {
     }
     
     /**
-     * Method that compute the first derivative of the cross-entropy cost 
+     * Computes the first derivative of the cross-entropy cost 
      * function, C = -1/n·(summ_x summ_j[y_j·ln a_j + (1-y_j)·ln(1-a_j)]), 
      * and its derivative is thus equal to the subtraction of the real result in
      * each example from the computed result for that example.
@@ -70,7 +70,7 @@ public class DLMath {
     }
     
     /**
-     * Method that compute the sigmoid function in each neuron.
+     * Implements the sigmoid function of each neuron.
      * 
      * @param z     Vector of inputs to a layer of neurons.
      * @return      A vector containing the computed sigmoid output of each
@@ -85,7 +85,7 @@ public class DLMath {
     }
     
     /**
-     * Compute the first derivative of the sigmoid function for each element
+     * Computes the first derivative of the sigmoid function for each element
      * in a vector.
      * 
      * @param z     Vector of inputs to a layer of neurons.
@@ -101,7 +101,7 @@ public class DLMath {
     }
     
     /**
-     * Method that compute the transposed vector.
+     * Computes the transposed vector.
      * 
      * @param v     A vector in matrix form to be transposed.
      * @return      The input vector once transposed.
@@ -114,7 +114,7 @@ public class DLMath {
     }
     
     /**
-     * Method that compute the transposed matrix.
+     * Computes the transposed matrix.
      * 
      * @param m     A matrix to be transposed.
      * @return      The input matrix once transposed.
@@ -128,7 +128,7 @@ public class DLMath {
     }
     
     /**
-     * An auxiliary method to compute the addition of matrices enclosed in 
+     * An auxiliary method that computes the addition of matrices enclosed in 
      * array lists. Structure in number of enclosed matrices and in the 
      * elements of each matrix must be equal.
      * 
@@ -166,7 +166,7 @@ public class DLMath {
     }
     
     /**
-     * Shuffle two sets of related data (inputs and respective outputs, for 
+     * Shuffles two sets of related data (inputs and respective outputs, for 
      * example) in the same way and so the correspondence between the elements 
      * is not lost.
      * 

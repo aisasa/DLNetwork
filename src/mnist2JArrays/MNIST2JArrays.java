@@ -7,8 +7,8 @@ import java.util.zip.*;                     // Zip/unzip files
 /**
  * Convert MNIST text data sets to Java arrays.
  * 
- * @version 0.9 
  * @author  Agustin Isasa Cuartero
+ * @version 0.9 
  */
 public class MNIST2JArrays {
     // Constants

@@ -2,9 +2,30 @@ package dlnetwork;
 
 import java.io.*;                   // IOException
 
+/**
+ * A main() class to define paramaters and start code execution over the deep
+ * learning network.
+ * 
+ * @author  Agustin Isasa Cuartero
+ * @version 0.9
+ */
 public class DLRun {
     // Defining, building and starting the neural network
-    public static void main(String[] args) throws IOException, ClassNotFoundException{
+
+    /**
+     * Entry point to setup and run a deep learning network. It implements three
+     * main actions:
+     * <ul>
+     * <li>Load MNIST data in their respective arrays.
+     * <li>Define network parameters and show they, if needed.
+     * <li>Define execution parameters and start learning/test execution.
+     * </ul>
+     * 
+     * @param args                      Command line arguments. 
+     * @throws IOException              If file does not exist.
+     * @throws ClassNotFoundException   If array does not exist in saved files.
+     */
+        public static void main(String[] args) throws IOException, ClassNotFoundException{
         // 1. Loading MNIST data (MNISTStore arrays)
         MNISTStore.loadMNISTArrays();
         
