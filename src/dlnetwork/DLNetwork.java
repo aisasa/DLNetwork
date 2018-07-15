@@ -200,11 +200,11 @@ public class DLNetwork {
             for(int j=0; j<mb; j++){
                 // 1. Load its input set in x array...
                 for(int k=0; k<MNISTStore.getInputSize(); k++)
-                    x[k][0] = MNISTStore.getTrainingDataIn()[i+j][k]; 
+                    x[k][0] = ((double[][])MNISTStore.getTrainingData().get(0))[i+j][k];  //getTrainingDataIn()[i+j][k]; 
                 // ...and include it as first 'y' as needed later in computeGradient()
                 y.add(x);    
                 // 2. Load the real result linked to the example
-                realOut[0] = DLMath.getOutputVector((int)MNISTStore.getTrainingDataOut()[i+j]);
+                realOut[0] = DLMath.getOutputVector((int)((double[])MNISTStore.getTrainingData().get(1))[i+j]);  //DLMath.getOutputVector((int)MNISTStore.getTrainingDataOut()[i+j]);
                 // 3. Compute the SGD process as learning algorithm...
                 feedForward(x);             // Feed forwarding
                 computeError();             // Output error
@@ -253,10 +253,10 @@ public class DLNetwork {
         for(int i=0; i<MNISTStore.getTestDataSize(); i++){     
             for(int j=0; j<MNISTStore.getInputSize(); j++)
                 // ...both input...
-                x[j][0] = MNISTStore.getTestDataIn()[i][j]; // get[Test|Validation]DataIn
+                x[j][0] = ((double[][])MNISTStore.getTestData().get(0))[i][j]; // get[Test|Validation]Data
             y.add(x);                       // Add input as first y
             // ...and tied realOut result
-            realOut[0] = DLMath.getOutputVector((int)MNISTStore.getTestDataOut()[i]); // get[Test|Validation]DataOut
+            realOut[0] = DLMath.getOutputVector((int)((double[])MNISTStore.getTestData().get(1))[i]); // get[Test|Validation]DataOut
             // 2. Do feed forward
             feedForward(x);               
             // 3. Take result of network, y, treat it,...

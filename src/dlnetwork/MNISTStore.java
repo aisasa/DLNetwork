@@ -2,6 +2,7 @@ package dlnetwork;
 
 import mnist2JArrays.*;                     // MNIST txt data to Java arrays
 import java.io.*;                           // IOException, File, I/O streams
+import java.util.ArrayList;                 // That same   
 import java.util.zip.*;                     // Zip/unzip files
 
 /**
@@ -11,12 +12,9 @@ import java.util.zip.*;                     // Zip/unzip files
  * @version 0.9
  */
 public class MNISTStore {
-    private static double[][] trainingDataIn;   
-    private static double[] trainingDataOut; 
-    private static double[][] validationDataIn;
-    private static double[] validationDataOut;
-    private static double[][] testDataIn;
-    private static double[] testDataOut;
+    private static final ArrayList trainingData = new ArrayList();
+    private static final ArrayList validationData = new ArrayList();
+    private static final ArrayList testData = new ArrayList();
     
     /**
      * Transfer MNIST data from previously saved files to proper Java data
@@ -26,37 +24,29 @@ public class MNISTStore {
      * @throws ClassNotFoundException   If array does not exist in saved files
      */
     public static void loadMNISTArrays() throws IOException, ClassNotFoundException{
-        File fTrainingIn = new File("trainingIn.dat");
-        File fTrainingOut = new File("trainingOut.dat");
-        File fValidationIn = new File("validationIn.dat");
-        File fValidationOut = new File("validationOut.dat");
-        File fTestIn = new File("testIn.dat");
-        File fTestOut = new File("testOut.dat");
-        if(!fTrainingIn.exists() || !fValidationIn.exists() || !fTestIn.exists())
+        File fTraining = new File("training.dat");
+        File fValidation = new File("validation.dat");
+        File fTest = new File("test.dat");
+        if(!fTraining.exists() || !fValidation.exists() || !fTest.exists())
             MNIST2JArrays.mnist2JArrays();
         
         // Training data
-        try(ObjectInputStream in = new ObjectInputStream(new GZIPInputStream(new FileInputStream(fTrainingIn)))){ 
-            trainingDataIn = (double[][])in.readObject();
-        }
-        try(ObjectInputStream in = new ObjectInputStream(new GZIPInputStream(new FileInputStream(fTrainingOut)))){ 
-            trainingDataOut = (double[])in.readObject();
+        try(ObjectInputStream in = new ObjectInputStream(new GZIPInputStream(new FileInputStream(fTraining)))){ 
+            ArrayList aList = (ArrayList)in.readObject();
+            trainingData.add((double[][])aList.get(0));
+            trainingData.add((double[])aList.get(1));
         }
         // Validation data
-        try(ObjectInputStream in = new ObjectInputStream(new GZIPInputStream(new FileInputStream(fValidationIn)))){ 
-            validationDataIn = (double[][])in.readObject();
-        }
-        try(ObjectInputStream in = new ObjectInputStream(
-                new GZIPInputStream(new FileInputStream(fValidationOut)))){ 
-            validationDataOut = (double[])in.readObject();
+        try(ObjectInputStream in = new ObjectInputStream(new GZIPInputStream(new FileInputStream(fValidation)))){ 
+            ArrayList aList = (ArrayList)in.readObject();
+            validationData.add((double[][])aList.get(0));
+            validationData.add((double[])aList.get(1));
         }
         // Test data
-        try(ObjectInputStream in = new ObjectInputStream(new GZIPInputStream(new FileInputStream(fTestIn)))){ 
-            testDataIn = (double[][])in.readObject();
-        }
-        try(ObjectInputStream in = new ObjectInputStream(
-                new GZIPInputStream(new FileInputStream(fTestOut)))){ 
-            testDataOut = (double[])in.readObject();
+        try(ObjectInputStream in = new ObjectInputStream(new GZIPInputStream(new FileInputStream(fTest)))){ 
+            ArrayList aList = (ArrayList)in.readObject();
+            testData.add((double[][])aList.get(0));
+            testData.add((double[])aList.get(1));
         }
         System.out.println("MNIST data set loaded");
     }
@@ -67,58 +57,40 @@ public class MNISTStore {
      * in training execution.
      * 
      */
-        public static void shuffleMNIST(){
-        DLMath.shuffle(trainingDataIn, trainingDataOut);
+    public static void shuffleMNIST(){
+        DLMath.shuffle(trainingData);
     }
     
     // Object getters
-    /**
+     /**
      *
-     * @return  A bidimensional array containing the input data from MNIST 
-     * training data set.
+     * @return  A container (an array list) with two elements: a bidimensional 
+     * array containing the input data from MNIST training data set and an array
+     * containing the real output of each input or example in MNIST training 
+     * data set.
      */
-        public static double[][] getTrainingDataIn(){
-        return trainingDataIn;
+    public static ArrayList getTrainingData(){
+    return trainingData;
     }
     /**
      *
-     * @return  An array containing the real outputs of each example in MNIST 
-     * training data set.
+     * @return  A container (an array list) with two elements: a bidimensional 
+     * array containing the input data from MNIST validation data set and an 
+     * array containing the corresponding real output of each input or example 
+     * in MNIST validation data set.
      */
-    public static double[] getTrainingDataOut(){
-        return trainingDataOut;
+    public static ArrayList getValidationData(){
+    return validationData;
     }
     /**
      *
-     * @return  A bidimensional array containing the input data from MNIST 
-     * validation data set.
+     * @return  A container (an array list) with two elements: a bidimensional 
+     * array containing the input data from MNIST test data set and an 
+     * array containing the corresponding real output of each input or example 
+     * in MNIST test data set.
      */
-    public static double[][] getValidationDataIn(){
-        return validationDataIn;
-    }
-    /**
-     *
-     * @return  An array containing the real outputs of each example in MNIST 
-     * validation data set.
-     */
-    public static double[] getValidationDataOut(){
-        return validationDataOut;
-    }
-    /**
-     *
-     * @return  A bidimensional array containing the input data from MNIST 
-     * test data set.
-     */
-    public static double[][] getTestDataIn(){
-        return testDataIn;
-    }
-    /**
-     *
-     * @return  An array containing the real outputs of each example in MNIST 
-     * test data set.
-     */
-    public static double[] getTestDataOut(){
-        return testDataOut;
+    public static ArrayList getTestData(){
+    return testData;
     }
     
     // Size getters
@@ -126,29 +98,29 @@ public class MNISTStore {
      *
      * @return  Size of MNIST training data set size.
      */
-        public static int getTrainingDataSize(){
-        return trainingDataIn.length;
+    public static int getTrainingDataSize(){
+        return ((double[][])trainingData.get(0)).length;
     }
     /**
      *
      * @return  Size of each input example in MNIST training data size.
      */
     public static int getInputSize(){
-        return trainingDataIn[0].length; 
+        return ((double[][])trainingData.get(0))[0].length;
     }
     /**
      *
      * @return  Size of MNIST validation data set size.
      */
     public static int getValidationDataSize(){
-        return validationDataIn.length;
+        return ((double[][])validationData.get(0)).length;
     }
     /**
      *
      * @return  Size of MNIST test data set size.
      */
     public static int getTestDataSize(){
-        return testDataIn.length;
+        return ((double[][])testData.get(0)).length;
     }
 
 }

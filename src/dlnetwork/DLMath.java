@@ -170,12 +170,15 @@ public class DLMath {
      * example) in the same way and so the correspondence between the elements 
      * is not lost.
      * 
-     * @param a     A matrix with the first set of data (a vector of vectors).
-     * @param b     A vector with the second part of data, with each element 
-     *              univocally related with its counterpart element in the first
-     *              set of data.
+     * @param aList An array list containing two elements: a bidimensional 
+     *              array containing the input data from MNIST training data set
+     *              and an array containing the real output of each input or 
+     *              example in MNIST training data set.
      */
-    public static void shuffle(double[][] a, double[] b){
+    //public static void shuffle(double[][] a, double[] b){
+    public static void shuffle(ArrayList aList){
+        double[][] a = (double[][])aList.get(0);
+        double[] b = (double[])aList.get(1);
         // A basic Fisher-Yates shuffle
         Random rand = new Random();
         for(int i=a.length-1; i>0; --i){

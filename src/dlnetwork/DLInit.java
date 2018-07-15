@@ -99,7 +99,7 @@ public class DLInit {
                     u[j][k] = (Math.random()-RND_SUBT)/RND_DIV;  
             w.add(u);
         }
-        // Saving the initialization weights for future reference in tests, if chosen
+        // Saving the initialization weights for future reference in tests, if needed
         if(wbInitType == WBInitType.RAND_AND_SAVE){
             try(ObjectOutputStream out = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream("initial_W.dat")))){
                     out.writeObject(w);
@@ -121,7 +121,7 @@ public class DLInit {
                 v[0][j] = (Math.random()-RND_SUBT)/RND_DIV; 
             b.add(v);            
         } 
-        // Saving the initialization biases for future reference in tests, if chosen
+        // Saving the initialization biases for future reference in tests, if needed
         if(wbInitType == WBInitType.RAND_AND_SAVE){
             try(ObjectOutputStream out = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream("initial_B.dat")))){
                     out.writeObject(b);

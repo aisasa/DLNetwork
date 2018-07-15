@@ -1,6 +1,7 @@
 package mnist2JArrays;
 
 import java.io.*;                           // IOException, I/O streams, File
+import java.util.ArrayList;                 // That same
 import java.util.Scanner;                   // Reading txt files
 import java.util.zip.*;                     // Zip/unzip files
 
@@ -23,6 +24,10 @@ public class MNIST2JArrays {
     private static double[] validationDataOut;
     private static double[][] testDataIn;
     private static double[] testDataOut;
+    private static final ArrayList trainingData = new ArrayList();
+    private static final ArrayList validationData = new ArrayList();
+    private static final ArrayList testData = new ArrayList();
+    
     
     /**
      * Static method that scans the MNIST text data sets and convert them to 
@@ -38,9 +43,7 @@ public class MNIST2JArrays {
                 for (int j = 0; j < INPUT_SIZE; j++) 
                     trainingDataIn[i][j] = Double.parseDouble(scan.findWithinHorizon("0\\.[0-9]*", INPUT_SIZE));
         }
-        try (ObjectOutputStream out = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream("trainingIn.dat")))) {
-            out.writeObject(trainingDataIn);
-        }
+        trainingData.add(trainingDataIn);
         trainingDataOut = new double[TRAINING_DATA_SIZE];
         try (FileReader input = new FileReader("trainingDataOut.txt")) {
             int c;
@@ -51,9 +54,10 @@ public class MNIST2JArrays {
                 trainingDataOut[i] = Character.getNumericValue(c);
             }
         }
-        try (ObjectOutputStream out = new ObjectOutputStream(
-                new GZIPOutputStream(new FileOutputStream("trainingOut.dat")))) {
-            out.writeObject(trainingDataOut);
+        trainingData.add(trainingDataOut);
+        try (ObjectOutputStream out = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream("training.dat")))) {
+            out.writeObject(trainingData);
+            out.close();
         }
 
         // Validation data
@@ -63,10 +67,7 @@ public class MNIST2JArrays {
                 for (int j = 0; j < INPUT_SIZE; j++) 
                     validationDataIn[i][j] = Double.parseDouble(scan.findWithinHorizon("0\\.[0-9]*", INPUT_SIZE));
         }
-        try (ObjectOutputStream out = new ObjectOutputStream(
-                new GZIPOutputStream(new FileOutputStream("validationIn.dat")))) {
-            out.writeObject(validationDataIn);
-        }
+        validationData.add(validationDataIn);
         validationDataOut = new double[VALIDATION_DATA_SIZE];
         try (FileReader input = new FileReader("validationDataOut.txt")) {
             int c;
@@ -77,9 +78,10 @@ public class MNIST2JArrays {
                 validationDataOut[i] = Character.getNumericValue(c);
             }
         }
+        validationData.add(validationDataOut);
         try (ObjectOutputStream out = new ObjectOutputStream(
-                new GZIPOutputStream(new FileOutputStream("validationOut.dat")))) {
-            out.writeObject(validationDataOut);
+                new GZIPOutputStream(new FileOutputStream("validation.dat")))) {
+            out.writeObject(validationData);
         }
 
         // Test data
@@ -89,10 +91,7 @@ public class MNIST2JArrays {
                 for (int j = 0; j < INPUT_SIZE; j++) 
                     testDataIn[i][j] = Double.parseDouble(scan.findWithinHorizon("0\\.[0-9]*", INPUT_SIZE));
         }
-        try (ObjectOutputStream out = new ObjectOutputStream(
-                new GZIPOutputStream(new FileOutputStream("testIn.dat")))) {
-            out.writeObject(testDataIn);
-        }
+        testData.add(testDataIn);
         testDataOut = new double[TEST_DATA_SIZE];
         try (FileReader input = new FileReader("testDataOut.txt")) {   
             int c;
@@ -103,10 +102,10 @@ public class MNIST2JArrays {
                 testDataOut[i] = Character.getNumericValue(c);
             }
         }
+        testData.add(testDataOut);
         try (ObjectOutputStream out = new ObjectOutputStream(
-                new GZIPOutputStream(new FileOutputStream("testOut.dat")))) {
-            out.writeObject(testDataOut);
+                new GZIPOutputStream(new FileOutputStream("test.dat")))) {
+            out.writeObject(testData);
         }
-
     }
 }
